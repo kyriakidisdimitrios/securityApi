@@ -1,0 +1,33 @@
+package com.example.securityapi.service;
+
+import com.example.securityapi.model.Customer;
+import com.example.securityapi.repository.CustomerRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class CustomerService {
+
+    private final CustomerRepository customerRepository;
+
+    public CustomerService(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+    }
+
+    public List<Customer> getAllCustomers() {
+        return customerRepository.findAll();
+    }
+
+    public void saveCustomer(Customer customer) {
+        customerRepository.save(customer);
+    }
+//
+//    public boolean authenticateCustomer(String name, String password) {
+//        return customerRepository.findByNameAndPassword(name, password).isPresent();
+//    }
+
+    public boolean authenticateCustomer(String username, String password) {
+        return customerRepository.findByUsernameAndPassword(username, password).isPresent();
+    }
+}

@@ -13,25 +13,20 @@
     <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px;">
         <h4 class="mb-4 text-center">Login to My Store</h4>
 
-        <!-- Spring Security-style error -->
-        <div th:if="${param.error}" class="alert alert-danger" role="alert">
-            Invalid username or password.
-        </div>
+        <!-- Show only error passed from controller -->
+        <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 
-        <!-- Custom controller error -->
-        <div th:if="${error}" class="alert alert-danger" role="alert">
-            <span th:text="${error}">Invalid credentials</span>
-        </div>
-
-        <form th:action="@{/login}" method="post">
+        <form th:action="@{/login}" method="post" th:object="${customer}">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
-                <input id="username" type="text" name="username" class="form-control" required autofocus>
+                <input id="username" type="text" th:field="*{username}" class="form-control"
+                       placeholder="Enter username" required autofocus />
             </div>
 
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
-                <input id="password" type="password" name="password" class="form-control" required>
+                <input id="password" type="password" th:field="*{password}" class="form-control"
+                       placeholder="Enter password" required />
             </div>
 
             <div class="d-grid mb-3">
