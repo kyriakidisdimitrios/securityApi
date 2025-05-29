@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title layout:title-pattern="$CONTENT_TITLE | My Store">My Store</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+</head>
+<body class="bg-light">
+
+<header class="bg-dark text-white p-3">
+    <div class="container d-flex justify-content-between">
+        <h1 class="h3 m-0">My Store</h1>
+        <nav>
+            <a th:href="@{/}" class="text-white me-3">Home</a>
+            <a th:href="@{/login}" class="text-white me-3">Login</a>
+            <a th:href="@{/register}" class="text-white">Register</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container mt-4">
+    <!-- This fragment will be overridden -->
+    <section layout:fragment="content">
+        <p>Default content</p>
+    </section>
+</main>
+
+<footer class="text-center text-muted mt-5 mb-4">
+    © 2025 My Store
+</footer>
+
+<script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
