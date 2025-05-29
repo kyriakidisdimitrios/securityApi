@@ -1,21 +1,26 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Login | My Store</title>
 </head>
-<body class="bg-light">
+<body>
 
-<div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+<section layout:fragment="content" class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
     <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px;">
         <h4 class="mb-4 text-center">Login to My Store</h4>
 
+        <!-- Spring Security-style error -->
         <div th:if="${param.error}" class="alert alert-danger" role="alert">
             Invalid username or password.
         </div>
 
-        <div th:if="${param.logout}" class="alert alert-success" role="alert">
-            You have been logged out.
+        <!-- Custom controller error -->
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <span th:text="${error}">Invalid credentials</span>
         </div>
 
         <form th:action="@{/login}" method="post">
@@ -38,7 +43,7 @@
             <a th:href="@{/register}">Don't have an account? Register</a>
         </div>
     </div>
-</div>
+</section>
 
 </body>
 </html>

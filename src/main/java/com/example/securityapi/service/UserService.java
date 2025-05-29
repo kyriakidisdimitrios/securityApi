@@ -22,4 +22,7 @@ public class UserService {
     public void saveUser(User user) {
         userRepository.save(user);
     }
+    public boolean authenticateUser(String name, String password) {
+        return userRepository.findByNameAndPassword(name, password).isPresent();
+    }
 }
