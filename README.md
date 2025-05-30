@@ -4,21 +4,22 @@ A web-based book store implemented using **Spring Boot**, **Thymeleaf**, and **M
 
 > **COMP47910 - Secure Software Engineering**
 > MSc in Advanced Software Engineering, Summer 2024/25
+> ![UCD Logo](https://www.ucd.ie/t4media/UCD_Logo_Colour.png)
 > **University College Dublin (UCD)**
 
 ---
 
 ## ⚙️ Technologies & Libraries
 
-| Tool / Library | Purpose                    |
-| -------------- | -------------------------- |
-|                | Core backend framework     |
-|                | Server-side HTML templates |
-|                | Relational database        |
-|                | UI styling                 |
-|                | Icons library              |
-|                | Dependency management      |
-|                | Programming language       |
+| Tool / Library          | Purpose                        |
+| ----------------------- | ------------------------------ |
+| 🧰 Spring Boot 3.5.0    | Core backend framework         |
+| 📝 Thymeleaf            | Server-side HTML templates     |
+| 🛢 MySQL                | Relational database            |
+| 🎨 Bootstrap 5.3.3      | UI styling                     |
+| 🌟 Font Awesome 6.7.2   | Icons library                  |
+| 📦 WebJars              | Frontend dependency management |
+| 🧠 Java 21 (OpenJDK 21) | Programming language & runtime |
 
 ---
 
@@ -67,12 +68,15 @@ This project is a course assignment developed for:
 * User login & session management
 * Book browsing with search capability
 * Add to cart with stock validation
-* Dynamic cart subtotal and total calculation
-* Mock checkout with client-side card validation
+* Quantity update with client-side subtotal and total calculation
+* Mock checkout with card input validation
 
 ---
 
 ## ✉️ Contact
 
-For questions related to this project, please contact: **Kyriakidis Dimitrios (jimboy3100)**
-Email: [*your.ucd.email@ucdconnect.ie*](mailto:your.ucd.email@ucdconnect.ie)
+For questions related to this project, please contact:
+**Kyriakidis Dimitrios (jimboy3100)**
+📧 Email: [dimitrios.kyriakidis@ucdconnect.ie](mailto:dimitrios.kyriakidis@ucdconnect.ie)
+
+---
