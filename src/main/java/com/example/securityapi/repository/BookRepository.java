@@ -16,4 +16,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     // Search books with titles containing a keyword (case-insensitive)
     List<Book> findByTitleContainingIgnoreCase(String keyword);
+
+    List<Book> findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCase(String titleKeyword, String authorKeyword);
+
 }

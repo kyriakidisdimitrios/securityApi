@@ -81,7 +81,12 @@
             <artifactId>jquery</artifactId>
             <version>3.7.1</version>
         </dependency>
-
+        <!-- WebJars: Font Awesome -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>font-awesome</artifactId>
+            <version>6.7.2</version>
+        </dependency>
         <!-- ✅ Thymeleaf Layout Dialect -->
         <dependency>
             <groupId>nz.net.ultraq.thymeleaf</groupId>

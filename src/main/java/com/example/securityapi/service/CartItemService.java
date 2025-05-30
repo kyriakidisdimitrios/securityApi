@@ -34,8 +34,9 @@ public class CartItemService {
 
         cartItemRepository.save(item);
     }
-
-
+    public void removeCartItemById(Long cartItemId) {
+        cartItemRepository.deleteById(cartItemId);
+    }
     public void removeFromCart(Customer customer, Long bookId) {
         cartItemRepository.deleteByCustomerAndBookId(customer, bookId);
     }
@@ -43,5 +44,23 @@ public class CartItemService {
     public void clearCart(Customer customer) {
         List<CartItem> items = cartItemRepository.findByCustomer(customer);
         cartItemRepository.deleteAll(items);
+    }
+    public void updateQuantity(Long cartItemId, int quantity) {
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Cart item not found."));
+
+        Book book = cartItem.getBook();
+        int availableCopies = book.getCopies();
+
+        if (quantity < 1) {
+            throw new IllegalArgumentException("Quantity must be at least 1.");
+        }
+
+        if (quantity > availableCopies) {
+            throw new IllegalArgumentException("Requested quantity exceeds available copies.");
+        }
+
+        cartItem.setQuantity(quantity);
+        cartItemRepository.save(cartItem);
     }
 }

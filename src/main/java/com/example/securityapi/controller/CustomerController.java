@@ -1,7 +1,9 @@
 package com.example.securityapi.controller;
 
+import com.example.securityapi.model.Book;
 import com.example.securityapi.model.Customer;
 import com.example.securityapi.service.CustomerService;
+import com.example.securityapi.service.BookService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -19,9 +21,12 @@ public class CustomerController {
     private static final Logger logger = LoggerFactory.getLogger(CustomerController.class);
 
     private final CustomerService customerService;
+    private final BookService bookService;
 
-    public CustomerController(CustomerService customerService) {
+
+    public CustomerController(CustomerService customerService, BookService bookService) {
         this.customerService = customerService;
+        this.bookService = bookService;
     }
 
     // Make loggedInUser available to all views
@@ -32,11 +37,26 @@ public class CustomerController {
     }
 
     // Home page
-    @GetMapping
-    public String home() {
-        return "index";
-    }
 
+//    @GetMapping
+//    public String home() {
+//        return "index";
+//    }
+    @GetMapping("")
+    public String viewHomePage(@RequestParam(name = "keyword", required = false) String keyword,
+                               Model model, HttpSession session) {
+        List<Book> books;
+        if (keyword != null && !keyword.isEmpty()) {
+            // Fetch books matching title or author containing the keyword
+            books = bookService.searchBooks(keyword);  // e.g., uses repository to search in title or author
+        } else {
+            // No keyword provided, fetch all books
+            books = bookService.findAllBooks();
+        }
+        model.addAttribute("books", books);
+        model.addAttribute("keyword", keyword);  // preserve the search term in the view
+        return "index";  // Render index.html Thymeleaf template
+    }
     // Customer list page
     @GetMapping("/customers")
     public String listCustomers(Model model) {
