@@ -3,8 +3,7 @@
 A web-based book store implemented using **Spring Boot**, **Thymeleaf**, and **MySQL**, built as part of the module:
 
 > **COMP47910 - Secure Software Engineering**
-> MSc in Advanced Software Engineering, Summer 2024/25
-> ![UCD Logo](https://www.ucd.ie/t4media/UCD_Logo_Colour.png)
+> MSc in Advanced Software Engineering, Summer 2024/25 <img src="https://www.ucd.ie/t4media/UCD_Logo_Colour.png" alt="UCD Logo" width="180"/>
 > **University College Dublin (UCD)**
 
 ---
@@ -19,6 +18,7 @@ A web-based book store implemented using **Spring Boot**, **Thymeleaf**, and **M
 | 🎨 Bootstrap 5.3.3      | UI styling                     |
 | 🌟 Font Awesome 6.7.2   | Icons library                  |
 | 📦 WebJars              | Frontend dependency management |
+| 🔐 Spring Security      | Basic session protection       |
 | 🧠 Java 21 (OpenJDK 21) | Programming language & runtime |
 
 ---
