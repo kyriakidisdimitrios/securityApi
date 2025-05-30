@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cart | My Store</title>
+</head>
+<body>
+
+<section layout:fragment="content" class="container mt-4">
+  <h2 class="mb-4 text-center">Your Shopping Cart</h2>
+
+  <div th:if="${#lists.isEmpty(cartItems)}">
+    <div class="alert alert-info text-center" role="alert">
+      Your cart is currently empty.
+    </div>
+  </div>
+
+  <div th:if="${not #lists.isEmpty(cartItems)}">
+    <table class="table table-bordered table-hover align-middle">
+      <thead class="table-dark">
+      <tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Year</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Subtotal</th>
+        <th>Action</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="item : ${cartItems}">
+        <td th:text="${item.book.title}">Book Title</td>
+        <td th:text="${item.book.author}">Author</td>
+        <td th:text="${item.book.year}">2024</td>
+        <td th:text="${item.book.price} + ' €'">9.99</td>
+        <td th:text="${item.quantity}">1</td>
+        <td th:text="${item.book.price * item.quantity} + ' €'">9.99</td>
+        <td>
+          <form th:action="@{/cart/remove}" method="post">
+            <input type="hidden" name="cartItemId" th:value="${item.id}" />
+            <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+      <tfoot>
+      <tr>
+        <td colspan="5" class="text-end fw-bold">Total:</td>
+        <td colspan="2" class="fw-bold" th:text="${totalPrice} + ' €'">Total</td>
+      </tr>
+      </tfoot>
+    </table>
+
+    <form th:action="@{/cart/checkout}" method="post" class="card p-3 shadow-sm mt-4">
+      <div class="mb-3">
+        <label for="paymentInfo" class="form-label">Payment Info (e.g., Card Number)</label>
+        <input type="text" name="paymentInfo" id="paymentInfo" class="form-control" placeholder="Enter card number" required />
+      </div>
+      <div class="d-grid">
+        <button type="submit" class="btn btn-success">Place Order</button>
+      </div>
+    </form>
+
+    <div th:if="${checkoutSuccess}" class="alert alert-success mt-3 text-center">
+      Order placed successfully!
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

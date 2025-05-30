@@ -18,6 +18,11 @@
 
             <a th:href="@{/}" class="text-white me-3">Home</a>
 
+            <!-- 🛒 Cart icon shown only when logged in -->
+            <a th:if="${session.loggedInUser}" th:href="@{/cart}" class="text-white me-3">
+                🛒 Cart
+            </a>
+
             <!-- If customer is logged in, show welcome and logout -->
             <span th:if="${session.loggedInUser}" class="text-white me-3">
                 Welcome, <strong th:text="${session.loggedInUser}">Customer</strong>

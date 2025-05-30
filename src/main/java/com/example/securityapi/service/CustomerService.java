@@ -22,6 +22,9 @@ public class CustomerService {
     public void saveCustomer(Customer customer) {
         customerRepository.save(customer);
     }
+    public Customer findByUsername(String username) {
+        return customerRepository.findByUsername(username).orElse(null);
+    }
 //
 //    public boolean authenticateCustomer(String name, String password) {
 //        return customerRepository.findByNameAndPassword(name, password).isPresent();
