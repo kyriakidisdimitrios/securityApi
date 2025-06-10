@@ -37,22 +37,51 @@ public class CartItemService {
 //        cartItemRepository.save(item);
 //    }
 //public void addToCart(Customer customer, Optional<Book> bookOpt, int quantity) {
-public void addToCart(Customer customer, Long bookId, int quantity) throws BookNotFoundException, CartItemException {
-    //Book book = bookOpt.orElseThrow(() -> new CartItemException("Cannot add to cart: Book not found."));
-    Book book = bookService.getBookById(bookId);
-    if (quantity <= 0) {
-        throw new CartItemException("Quantity must be a positive number.");
+//public void addToCart(Customer customer, Long bookId, int quantity) throws BookNotFoundException, CartItemException {
+//    //Book book = bookOpt.orElseThrow(() -> new CartItemException("Cannot add to cart: Book not found."));
+//    Book book = bookService.getBookById(bookId);
+//    if (quantity <= 0) {
+//        throw new CartItemException("Quantity must be a positive number.");
+//    }
+//    if (quantity > book.getCopies()) {
+//        throw new CartItemException("Cannot add to cart. Requested quantity exceeds available stock.");
+//    }
+//    CartItem item = CartItem.builder()
+//            .customer(customer)
+//            .book(book)
+//            .quantity(quantity)
+//            .build();
+//    cartItemRepository.save(item);
+//}
+
+    public void addToCart(Customer customer, Long bookId, int quantity) throws BookNotFoundException, CartItemException {
+        Book book = bookService.getBookById(bookId);
+        if (quantity <= 0) {
+            throw new CartItemException("Quantity must be a positive number.");
+        }
+        // Check if item already exists in the cart
+        CartItem existingItem = cartItemRepository.findByCustomerAndBook(customer, book);
+        if (existingItem != null) {
+            int newQuantity = existingItem.getQuantity() + quantity;
+
+            if (newQuantity > book.getCopies()) {
+                throw new CartItemException("Cannot add to cart. Total quantity exceeds available stock.");
+            }
+
+            existingItem.setQuantity(newQuantity);
+            cartItemRepository.save(existingItem);
+        } else {
+            if (quantity > book.getCopies()) {
+                throw new CartItemException("Cannot add to cart. Requested quantity exceeds available stock.");
+            }
+            CartItem newItem = CartItem.builder()
+                    .customer(customer)
+                    .book(book)
+                    .quantity(quantity)
+                    .build();
+            cartItemRepository.save(newItem);
+        }
     }
-    if (quantity > book.getCopies()) {
-        throw new CartItemException("Cannot add to cart. Requested quantity exceeds available stock.");
-    }
-    CartItem item = CartItem.builder()
-            .customer(customer)
-            .book(book)
-            .quantity(quantity)
-            .build();
-    cartItemRepository.save(item);
-}
 //    public void removeCartItemById(Long cartItemId) {
 //        cartItemRepository.deleteById(cartItemId);
 //    }

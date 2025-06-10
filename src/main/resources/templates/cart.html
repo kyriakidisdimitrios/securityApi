@@ -77,22 +77,51 @@
                 <td th:text="${item.book.year}">Year</td>
                 <td th:text="${#numbers.formatDecimal(item.book.price, 1, 2)} + ' €'">Price</td>
                 <td>
+<!--                    <input type="number"-->
+<!--                           class="form-control form-control-sm text-center"-->
+<!--                           style="width: 70px;"-->
+<!--                           min="1"-->
+<!--                           th:value="${item.quantity}"-->
+<!--                           th:attr="max=${item.book.copies}"-->
+<!--                           step="1"-->
+<!--                           required-->
+<!--                           th:attrappend="oninput='validateAndUpdate(this, ' + ${item.book.copies} + ', ' + ${item.book.price} + ')'" />-->
+<!--                    <form th:action="@{/cart/update}" method="post"-->
+<!--                          onsubmit="const btn = this.querySelector('button'); if (btn) btn.disabled = true;">-->
+<!--                        <input type="hidden" name="_method" value="put" />-->
+<!--                        <input type="hidden" name="cartItemId" th:value="${item.id}" />-->
+<!--                        <input type="number"-->
+<!--                               name="quantity"-->
+<!--                               class="form-control form-control-sm text-center me-2"-->
+<!--                               style="width: 70px;"-->
+<!--                               min="1"-->
+<!--                               th:value="${item.quantity}"-->
+<!--                               th:attr="max=${item.book.copies}"-->
+<!--                               step="1"-->
+<!--                               required-->
+<!--                               onchange="this.form.submit();" />-->
+<!--                    </form>-->
                     <input type="number"
-                           class="form-control form-control-sm text-center"
+                           class="form-control form-control-sm text-center cart-qty-input"
                            style="width: 70px;"
                            min="1"
                            th:value="${item.quantity}"
-                           th:attr="max=${item.book.copies}"
+                           th:attr="max=${item.book.copies}, data-cart-id=${item.id}"
                            step="1"
-                           required
-                           th:attrappend="oninput='validateAndUpdate(this, ' + ${item.book.copies} + ', ' + ${item.book.price} + ')'" />
+                           required />
+
                 </td>
                 <td class="subtotal" th:text="${#numbers.formatDecimal(item.book.price * item.quantity, 1, 2)} + ' €'">Subtotal</td>
                 <td>
-                    <form th:action="@{/cart/remove}" method="post">
-                        <input type="hidden" name="cartItemId" th:value="${item.id}" />
-                        <button type="submit" class="btn btn-sm btn-danger remove-btn">Remove</button>
-                    </form>
+<!--                    <form th:action="@{/cart/remove}" method="post">-->
+<!--                        <input type="hidden" name="cartItemId" th:value="${item.id}" />-->
+<!--                        <button type="submit" class="btn btn-sm btn-danger remove-btn">Remove</button>-->
+<!--                    </form>-->
+                    <button type="button"
+                            class="btn btn-sm btn-danger remove-cart-item"
+                            th:attr="data-cart-id=${item.id}">
+                        Remove
+                    </button>
                 </td>
             </tr>
             </tbody>
@@ -128,7 +157,7 @@
             Order placed successfully!
         </div>
     </div>
+    <script th:src="@{delete}"></script>
 </section>
-
 </body>
 </html>

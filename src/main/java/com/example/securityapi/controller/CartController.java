@@ -14,7 +14,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -51,23 +53,31 @@ public class CartController {
         return "cart";
     }
 
-    @PostMapping("/update")
-    public String updateCartItem(@RequestParam("cartItemId") Long cartItemId,
-                                 @RequestParam("quantity") int quantity,
-                                 HttpSession session,
-                                 Model model) {
-        String username = (String) session.getAttribute("loggedInUser");
-        if (username == null) return "redirect:/login";
+   // @PostMapping("/update")
+   @PutMapping("/update-ajax")
+   @ResponseBody
+   public Map<String, Object> updateCartAjax(@RequestBody Map<String, String> payload, HttpSession session) {
+       String username = (String) session.getAttribute("loggedInUser");
+       Map<String, Object> response = new HashMap<>();
 
-        if (quantity < 1) {
-            model.addAttribute("error", "Quantity must be at least 1.");
-            return "redirect:/cart";
-        }
+       if (username == null) {
+           response.put("success", false);
+           response.put("message", "Not logged in");
+           return response;
+       }
 
-        // No quantity persistence here as discussed
+       try {
+           Long cartItemId = Long.parseLong(payload.get("cartItemId"));
+           int quantity = Integer.parseInt(payload.get("quantity"));
+           cartItemService.updateQuantity(cartItemId, quantity);
+           response.put("success", true);
+       } catch (Exception e) {
+           response.put("success", false);
+           response.put("message", e.getMessage());
+       }
 
-        return "redirect:/cart";
-    }
+       return response;
+   }
 
     @PostMapping("/add")
     public String addToCart(@RequestParam("bookId") Long bookId,
@@ -103,22 +113,30 @@ public class CartController {
 //        cartItemService.removeCartItemById(cartItemId);
 //        return "redirect:/cart";
 //    }
-    @PostMapping("/remove")
-    public String removeFromCart(@RequestParam("cartItemId") Long cartItemId,
-                                 HttpSession session,
-                                 RedirectAttributes redirectAttributes) { // Add RedirectAttributes
-        String username = (String) session.getAttribute("loggedInUser");
-        if (username == null) {
-            return "redirect:/login";
-        }
-        try {
-            cartItemService.removeCartItemById(cartItemId);
-            redirectAttributes.addFlashAttribute("successMessage", "Item removed from cart.");
-        } catch (CartItemException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/cart";
+    //@PostMapping("/remove")
+@DeleteMapping("/remove-ajax")
+@ResponseBody
+public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> payload, HttpSession session) {
+    String username = (String) session.getAttribute("loggedInUser");
+    Map<String, Object> response = new HashMap<>();
+
+    if (username == null) {
+        response.put("success", false);
+        response.put("message", "Not logged in");
+        return response;
     }
+
+    try {
+        Long cartItemId = Long.parseLong(payload.get("cartItemId"));
+        cartItemService.removeCartItemById(cartItemId);
+        response.put("success", true);
+    } catch (Exception e) {
+        response.put("success", false);
+        response.put("message", e.getMessage());
+    }
+
+    return response;
+}
     @PostMapping("/checkout")
     public String checkout(@RequestParam("paymentInfo") String paymentInfo,
                            HttpSession session,

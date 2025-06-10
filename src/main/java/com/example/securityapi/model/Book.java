@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "books")
+@Table(
+        name = "books",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"title", "author", "year"})
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,5 +31,4 @@ public class Book {
 
     @Column(nullable = false)
     private int copies;
-
 }

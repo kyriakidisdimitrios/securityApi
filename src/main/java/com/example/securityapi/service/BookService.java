@@ -29,7 +29,9 @@ public class BookService {
         return bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException(id));
     }
-
+    public boolean bookExists(String title, String author, int year) {
+        return bookRepository.existsByTitleAndAuthorAndYear(title, author, year);
+    }
     public Book saveBook(Book book) {
         return bookRepository.save(book);
     }
