@@ -1,5 +1,7 @@
 package com.example.securityapi.controller;
 
+import com.example.securityapi.exception.BookNotFoundException;
+import com.example.securityapi.exception.CartItemException;
 import com.example.securityapi.model.Book;
 import com.example.securityapi.model.CartItem;
 import com.example.securityapi.model.Customer;
@@ -10,6 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Optional;
@@ -69,28 +72,53 @@ public class CartController {
     @PostMapping("/add")
     public String addToCart(@RequestParam("bookId") Long bookId,
                             @RequestParam(defaultValue = "1") int quantity,
-                            HttpSession session) {
+                            HttpSession session,
+                            RedirectAttributes redirectAttributes) { // Add RedirectAttributes for user feedback
         String username = (String) session.getAttribute("loggedInUser");
-        if (username == null) return "redirect:/login";
+        if (username == null) {
+            return "redirect:/login";
+        }
+        try {
+            Customer customer = customerService.findByUsername(username);
+            cartItemService.addToCart(customer, bookId, quantity);
+            redirectAttributes.addFlashAttribute("successMessage", "Book added to cart successfully!");
 
-        Customer customer = customerService.findByUsername(username);
-        Optional<Book> book = bookService.getBookById(bookId);
+        } catch (BookNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/books"; // Redirect to the main book list page
 
-        cartItemService.addToCart(customer, book, quantity);
-
+        } catch (CartItemException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/cart"; // Redirect back to the cart
+        }
         return "redirect:/cart";
     }
 
+//    @PostMapping("/remove")
+//    public String removeFromCart(@RequestParam("cartItemId") Long cartItemId,
+//                                 HttpSession session) {
+//        String username = (String) session.getAttribute("loggedInUser");
+//        if (username == null) return "redirect:/login";
+//
+//        cartItemService.removeCartItemById(cartItemId);
+//        return "redirect:/cart";
+//    }
     @PostMapping("/remove")
     public String removeFromCart(@RequestParam("cartItemId") Long cartItemId,
-                                 HttpSession session) {
+                                 HttpSession session,
+                                 RedirectAttributes redirectAttributes) { // Add RedirectAttributes
         String username = (String) session.getAttribute("loggedInUser");
-        if (username == null) return "redirect:/login";
-
-        cartItemService.removeCartItemById(cartItemId);
+        if (username == null) {
+            return "redirect:/login";
+        }
+        try {
+            cartItemService.removeCartItemById(cartItemId);
+            redirectAttributes.addFlashAttribute("successMessage", "Item removed from cart.");
+        } catch (CartItemException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/cart";
     }
-
     @PostMapping("/checkout")
     public String checkout(@RequestParam("paymentInfo") String paymentInfo,
                            HttpSession session,

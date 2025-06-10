@@ -28,7 +28,7 @@ A web-based book store implemented using **Spring Boot**, **Thymeleaf**, and **M
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/secure-bookstore.git
+git clone git clone https://github.com/kyriakidisdimitrios/securityApi.git
 cd secure-bookstore
 ```
 
