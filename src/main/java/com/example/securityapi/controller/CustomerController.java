@@ -1,8 +1,10 @@
 package com.example.securityapi.controller;
 
 import com.example.securityapi.exception.BookNotFoundException;
+import com.example.securityapi.model.Author;
 import com.example.securityapi.model.Book;
 import com.example.securityapi.model.Customer;
+import com.example.securityapi.service.AuthorService;
 import com.example.securityapi.service.CustomerService;
 import com.example.securityapi.service.BookService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,7 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.time.LocalDate;
 import java.util.List;
 
 @Controller
@@ -21,9 +23,11 @@ public class CustomerController {
     private static final Logger logger = LoggerFactory.getLogger(CustomerController.class);
     private final CustomerService customerService;
     private final BookService bookService;
-    public CustomerController(CustomerService customerService, BookService bookService) {
+    private final AuthorService authorService;
+    public CustomerController(CustomerService customerService, BookService bookService, AuthorService authorService) {
         this.customerService = customerService;
         this.bookService = bookService;
+        this.authorService = authorService;
     }
     // Make loggedInUser available to all views
     @ModelAttribute
@@ -131,8 +135,6 @@ public String loginCustomer(@ModelAttribute("customer") Customer customer,
         return "login";
     }
 }
-
-
     @GetMapping("/customLogout")
     public String logout(HttpServletRequest request) {
         logger.info("Customer '{}' Logout");
@@ -144,21 +146,34 @@ public String loginCustomer(@ModelAttribute("customer") Customer customer,
         return "redirect:/login?logout";
     }
 
-
-
-
-
-
     // Admin only
 
     @GetMapping("/admin/books")
     public String bookList(Model model, HttpSession session) {
+        // Admin check
         if (!Boolean.TRUE.equals(session.getAttribute("isAdmin"))) {
             return "redirect:/login";
         }
 
-        List<Book> books = bookService.findAllBooks();
-        model.addAttribute("books", books);
+        // This part for the table remains the same
+        model.addAttribute("books", bookService.findAllBooks());
+        model.addAttribute("allAuthors", authorService.findAll());
+
+        // --- START: The Fix for Default Values ---
+
+        // 1. Create a new Book instance
+        Book newBook = new Book();
+
+        // 2. Set the desired default values on the object
+        newBook.setYear(LocalDate.now().getYear()); // Sets the current year (e.g., 2024)
+        newBook.setPrice(20.00);                    // Sets the default price to 20.00
+        newBook.setCopies(1);                       // Sets the default quantity to 1
+
+        // 3. Add the pre-populated book object to the model
+        model.addAttribute("newBook", newBook);
+
+        // --- END: The Fix ---
+
         return "admin_books";
     }
 
@@ -171,27 +186,36 @@ public String loginCustomer(@ModelAttribute("customer") Customer customer,
 //        bookService.saveBook(book);
 //        return "redirect:/admin/books";
 //    }
-    @PostMapping("/admin/books/add")
-        public String addBook(@ModelAttribute Book book, Model model) {
-        // Check for existing book with same title, author, and year
-        if (bookService.bookExists(book.getTitle(), book.getAuthor(), book.getYear())) {
-            model.addAttribute("error", "A book with the same title, author, and year already exists.");
-            model.addAttribute("book", book);
-            return "admin_book_form"; // Ensure this matches your actual form template name
-        }
-
-        bookService.saveBook(book);
-        return "redirect:/admin/books";
+@PostMapping("/admin/books/add")
+public String addBook(@ModelAttribute Book book, Model model) {
+    // Check for existing book with same title, authors, and year
+    if (bookService.bookExists(book.getTitle(), book.getAuthors(), book.getYear())) {
+        model.addAttribute("error", "A book with the same title, authors, and year already exists.");
+        model.addAttribute("book", book);
+        return "admin_book_form";
     }
+
+    bookService.saveBook(book);
+    return "redirect:/admin/books";
+}
+
     @GetMapping("/admin/books/edit/{id}")
     public String showEditBookForm(@PathVariable Long id, Model model, HttpSession session) throws BookNotFoundException {
         if (!Boolean.TRUE.equals(session.getAttribute("isAdmin"))) {
             return "redirect:/login";
         }
 
+        // 1. Get the book to be edited (your existing code)
         Book book = bookService.getBookById(id);
+
+        // 2. GET ALL AUTHORS from the database
+        List<Author> allAuthors = authorService.findAll(); // You need an findAll() method in your AuthorService
+
+        // 3. ADD BOTH the book AND the author list to the model
         model.addAttribute("book", book);
-        return "admin_edit_book";
+        model.addAttribute("allAuthors", allAuthors); // <-- THE NEW, REQUIRED LINE
+
+        return "admin_edit_book"; // Your template name
     }
 
     @PutMapping("/admin/books/update")

@@ -23,8 +23,17 @@
             <a th:href="@{/}" class="text-white me-3">Home</a>
 
             <!-- 🛒 Cart icon shown only when logged in -->
-            <a th:if="${session.loggedInUser}" th:href="@{/cart}" class="text-white me-3">
+
+<!--            <a th:if="${session.loggedInUser}" th:href="@{/cart}" class="text-white me-3">-->
+<!--                <i class="fas fa-shopping-cart"></i> Cart-->
+<!--            </a>-->
+            <a th:if="${session.loggedInUser}" th:href="@{/cart}" class="text-white me-3 position-relative">
                 <i class="fas fa-shopping-cart"></i> Cart
+                <span th:if="${session.cartQuantity > 0}"
+                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                      th:text="${session.cartQuantity}">
+            0
+            </span>
             </a>
             <!-- Admin Panel -->
             <a th:if="${session.isAdmin}" th:href="@{/admin/books}" class="text-warning me-3">

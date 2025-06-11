@@ -34,7 +34,11 @@
                 <div class="card-body">
                     <h5 class="card-title mt-3" th:text="${book.title}">Book Title</h5>
                     <p class="card-text">
-                        <small class="text-muted" th:text="${book.author}">Author</small>
+                        <small class="text-muted">
+                <span th:each="author, iterStat : ${book.authors}">
+                <span th:text="|${author.firstName} ${author.lastName}|"></span><span th:if="${!iterStat.last}">, </span>
+                </span>
+                        </small>
                     </p>
                     <p class="card-text">
                         <strong>Year:</strong> <span th:text="${book.year}">Year</span><br/>

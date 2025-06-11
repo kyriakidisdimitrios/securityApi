@@ -134,4 +134,9 @@ public class CartItemService {
         cartItem.setQuantity(quantity);
         cartItemRepository.save(cartItem);
     }
+    public int getTotalQuantityForCustomer(Customer customer) {
+        return cartItemRepository.findByCustomer(customer).stream()
+                .mapToInt(CartItem::getQuantity)
+                .sum();
+    }
 }

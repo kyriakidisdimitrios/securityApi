@@ -139,8 +139,10 @@ public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> paylo
 }
     @PostMapping("/checkout")
     public String checkout(@RequestParam("paymentInfo") String paymentInfo,
+                           @RequestParam(value = "checkCardIntegrity", required = false) String checkCardIntegrity,
                            HttpSession session,
-                           Model model) {
+                           RedirectAttributes redirectAttributes) throws BookNotFoundException {
+
         String username = (String) session.getAttribute("loggedInUser");
         if (username == null) return "redirect:/login";
 
@@ -148,31 +150,38 @@ public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> paylo
         List<CartItem> cartItems = cartItemService.getCartItems(customer);
 
         if (cartItems.isEmpty()) {
-            model.addAttribute("error", "Your cart is empty!");
-            return "cart";
+            redirectAttributes.addFlashAttribute("error", "Your cart is empty!");
+            return "redirect:/cart";
         }
 
-        if (!isValidCardNumber(paymentInfo)) {
-            model.addAttribute("error", "Invalid card number.");
-            model.addAttribute("cartItems", cartItems);
-            model.addAttribute("totalPrice", cartItems.stream()
-                    .mapToDouble(item -> item.getBook().getPrice() * item.getQuantity())
-                    .sum());
-            return "cart";
+        boolean integrityEnabled = (checkCardIntegrity != null);  // Will be null if unchecked
+
+        if (integrityEnabled && !isValidCardNumber(paymentInfo)) {
+            redirectAttributes.addFlashAttribute("error", "Invalid card number.");
+            return "redirect:/cart";
         }
 
-        // Update the quantity in DB only on successful checkout
+        double totalPaid = 0;
         for (CartItem item : cartItems) {
             cartItemService.updateQuantity(item.getId(), item.getQuantity());
+
+            Book book = item.getBook();
+            int remaining = book.getCopies() - item.getQuantity();
+            book.setCopies(Math.max(remaining, 0));
+            totalPaid += book.getPrice() * item.getQuantity();
+
+            if (book.getCopies() == 0) {
+                //bookService.deleteBook(book.getId());
+                bookService.saveBook(book);
+            }
+            else {
+                bookService.saveBook(book);
+            }
         }
 
-        model.addAttribute("paymentSuccess", true);
-        model.addAttribute("totalPaid", cartItems.stream()
-                .mapToDouble(item -> item.getBook().getPrice() * item.getQuantity())
-                .sum());
-
         cartItemService.clearCart(customer);
-        return "checkout";
+        session.setAttribute("checkoutTotal", totalPaid);
+        return "redirect:/cart/checkout-popup"; // popup
     }
 
     private boolean isValidCardNumber(String number) {
@@ -191,5 +200,11 @@ public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> paylo
             alternate = !alternate;
         }
         return (sum % 10 == 0);
+    }
+    @GetMapping("/checkout-popup")
+    public String checkoutPopup(HttpSession session, Model model) {
+        Double total = (Double) session.getAttribute("checkoutTotal");
+        model.addAttribute("totalPaid", total != null ? total : 0);
+        return "checkout";  // returns checkout.html from templates/
     }
 }

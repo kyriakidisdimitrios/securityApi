@@ -1,12 +1,9 @@
-//console.log('🟢 Cart JS loaded!');
 document.addEventListener('DOMContentLoaded', () => {
     // Quantity update via AJAX
     document.querySelectorAll('.cart-qty-input').forEach(input => {
         input.addEventListener('change', function () {
             const cartItemId = this.getAttribute('data-cart-id');
             const quantity = this.value;
-
-            console.log('Updating cart item:', cartItemId, 'to quantity:', quantity);
 
             fetch('/cart/update-ajax', {
                 method: 'PUT',
@@ -15,12 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({ cartItemId, quantity })
             })
-                .then(res => {
-                    if (!res.ok) throw new Error("Failed to update");
-                    return res.json();
-                })
+                .then(res => res.json())
                 .then(data => {
-                    console.log('Update response:', data);
                     if (data.success) {
                         location.reload();
                     } else {
@@ -38,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.remove-cart-item').forEach(btn => {
         btn.addEventListener('click', function () {
             const cartItemId = this.getAttribute('data-cart-id');
-            console.log('Attempting to remove cart item:', cartItemId);
 
             if (!confirm("Are you sure you want to remove this item?")) return;
 
@@ -49,12 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({ cartItemId })
             })
-                .then(res => {
-                    if (!res.ok) throw new Error("Failed to remove");
-                    return res.json();
-                })
+                .then(res => res.json())
                 .then(data => {
-                    console.log('Remove response:', data);
                     if (data.success) {
                         location.reload();
                     } else {
@@ -67,4 +55,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         });
     });
+
+    // ✅ Card Integrity Switch logic
+    const switchInput = document.getElementById("cardIntegritySwitch");
+    const cardInput = document.getElementById("paymentInfo");
+    if (switchInput && cardInput) {
+        function updateCardValidation() {
+            if (switchInput.checked) {
+                cardInput.setAttribute("required", "required");
+                cardInput.setAttribute("pattern", "\\d{16}");
+            } else {
+                cardInput.removeAttribute("required");
+                cardInput.removeAttribute("pattern");
+            }
+        }
+
+        switchInput.addEventListener("change", updateCardValidation);
+        updateCardValidation(); // initial setup
+    }
 });
+
+// ✅ Make openPopup globally accessible
+function openPopup() {
+    // Open the checkout popup window
+    window.open('/cart/checkout-popup', 'checkoutPopup', 'width=600,height=400');
+
+    // Redirect main window (not the popup) to /index after a brief delay
+    setTimeout(() => {
+        window.location.href = '/';
+    }, 500); // Allow enough time for popup to initiate
+}

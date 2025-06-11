@@ -50,11 +50,11 @@
     </div>
 
     <!-- Empty Cart Message -->
-    <div th:if="${#lists.isEmpty(cartItems)}">
-        <div class="alert alert-info text-center" role="alert">
-            Your cart is currently empty.
-        </div>
-    </div>
+<!--    <div th:if="${#lists.isEmpty(cartItems)}">-->
+<!--        <div class="alert alert-info text-center" role="alert">-->
+<!--            Your cart is currently empty.-->
+<!--        </div>-->
+<!--    </div>-->
 
     <!-- Cart Table -->
     <div th:if="${not #lists.isEmpty(cartItems)}">
@@ -73,7 +73,9 @@
             <tbody>
             <tr th:each="item : ${cartItems}">
                 <td th:text="${item.book.title}">Book Title</td>
-                <td th:text="${item.book.author}">Author</td>
+                <span th:each="author, iterStat : ${item.book.authors}">
+            <span th:text="|${author.firstName} ${author.lastName}|"></span><span th:if="${!iterStat.last}">, </span>
+        </span>
                 <td th:text="${item.book.year}">Year</td>
                 <td th:text="${#numbers.formatDecimal(item.book.price, 1, 2)} + ' €'">Price</td>
                 <td>
@@ -135,29 +137,38 @@
         </table>
 
         <!-- Checkout Form -->
-        <form th:action="@{/cart/checkout}" method="post" class="card p-3 shadow-sm mt-4">
-            <div class="mb-3">
-                <label for="paymentInfo" class="form-label">Payment Info (e.g., Card Number)</label>
-                <input type="text"
-                       name="paymentInfo"
-                       id="paymentInfo"
-                       class="form-control"
-                       placeholder="Enter card number"
-                       required
-                       pattern="\d{16}"
-                       title="Enter a valid 16-digit card number" />
-            </div>
-            <div class="d-grid">
-                <button type="submit" class="btn btn-success">Place Order</button>
-            </div>
-        </form>
+        <div class="d-flex justify-content-center mt-4">
+            <form th:action="@{/cart/checkout}" method="post"
+                  class="card p-3 shadow-sm w-50"
+                  target="checkoutPopup"
+                  onsubmit="openPopup()">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="cardIntegritySwitch" name="checkCardIntegrity" checked>
+                    <label class="form-check-label" for="cardIntegritySwitch">Card Integrity Check</label>
+                </div>
+                <div class="mb-3">
+                    <label for="paymentInfo" class="form-label">Payment Info (e.g., Card Number)</label>
+                    <input type="text"
+                           name="paymentInfo"
+                           id="paymentInfo"
+                           class="form-control"
+                           placeholder="Enter card number"
+                           required
+                           pattern="\d{16}"
+                           title="Enter a valid 16-digit card number" />
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success">Place Order</button>
+                </div>
+            </form>
+        </div>
 
         <!-- Success Message -->
         <div th:if="${checkoutSuccess}" class="alert alert-success mt-3 text-center">
             Order placed successfully!
         </div>
     </div>
-    <script th:src="@{delete}"></script>
+    <script th:src="@{/js/cart.js}"></script>
 </section>
 </body>
 </html>

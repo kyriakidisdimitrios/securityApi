@@ -24,8 +24,15 @@
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Author</label>
-      <input type="text" class="form-control" th:field="*{author}" required>
+      <label for="authors" class="form-label">Authors</label>
+      <select id="authors" class="form-select" th:field="*{authors}" multiple="multiple" size="5" required>
+        <option th:each="author : ${allAuthors}"
+                th:value="${author.id}"
+                th:text="|${author.firstName} ${author.lastName}|">
+          Author Name
+        </option>
+      </select>
+      <small class="form-text text-muted">Hold down Ctrl (or Cmd on Mac) to select multiple authors.</small>
     </div>
 
     <div class="mb-3">
@@ -48,9 +55,9 @@
     </div>
   </form>
 
-  <div class="text-center mt-3">
-    <a th:href="@{/admin/books}">← Back to Book List</a>
-  </div>
+<!--  <div class="text-center mt-3">-->
+<!--    <a th:href="@{/admin/books}">← Back to Book List</a>-->
+<!--  </div>-->
 </section>
 
 </body>
