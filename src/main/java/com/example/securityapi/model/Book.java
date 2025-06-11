@@ -1,6 +1,8 @@
 package com.example.securityapi.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +22,8 @@ public class Book {
     private String title;
     private int year;
     private double price;
+    @NotNull(message = "Copies is required")
+    @Min(value = 0, message = "Copies must be 0 or more")
     private int copies;
 
     @ManyToMany
