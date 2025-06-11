@@ -201,9 +201,10 @@ VALUES ((SELECT id FROM books WHERE title = 'Collaborative Tales' LIMIT 1),
 3. Update your Spring config file `src/main/resources/application.properties`:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/bookstore
-spring.datasource.username=your_mysql_username
-spring.datasource.password=your_mysql_password
+# Not suggested to reveal sensitive information in public repositories.
+spring.datasource.url=jdbc:mysql://localhost:3306/securityapi
+spring.datasource.username=root
+spring.datasource.password=Jimboy31
 
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
@@ -283,3 +284,6 @@ Java version: 21, vendor: Oracle Corporation (or OpenJDK)
 ---
 
 ✅ Now you're all set. If anything breaks, it's probably the database or Java setup—double check `JAVA_HOME`, `Path`, and your database URL/credentials!
+🧠 This project was assisted using **[ChatGPT 4.0](https://chat.openai.com/chat)** and development logs can be found at [`/chatgpt`](./chatgpt).
+❗ ** For any questions, don't hesitate to send me an email or contact me on [LinkedIn](https://www.linkedin.com/in/kyriakidis-demetrios/).**
+
