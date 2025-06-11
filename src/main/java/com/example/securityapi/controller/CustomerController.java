@@ -9,11 +9,15 @@ import com.example.securityapi.service.CustomerService;
 import com.example.securityapi.service.BookService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -210,7 +214,7 @@ public String addBook(@ModelAttribute Book book, Model model) {
 
         // --- FINAL DEBUGGING STEP ---
         // Print the ID of the book THE MOMENT it comes back from the service.
-        System.out.println("FETCHED BOOK FOR EDIT PAGE. ID IS: " + book.getId());
+        //System.out.println("FETCHED BOOK FOR EDIT PAGE. ID IS: " + book.getId());
         // --- END DEBUGGING STEP ---
 
         // 2. Get all authors for the dropdown
@@ -224,14 +228,22 @@ public String addBook(@ModelAttribute Book book, Model model) {
     }
 
     @PutMapping("/admin/books/update")
-    public String updateBook(@ModelAttribute("book") Book book, HttpSession session) throws BookNotFoundException {
+    public String updateBook(@Valid @ModelAttribute("book") Book book,
+                             BindingResult bindingResult,
+                             HttpSession session,
+                             RedirectAttributes redirectAttributes) throws BookNotFoundException {
+
         if (!Boolean.TRUE.equals(session.getAttribute("isAdmin"))) {
             return "redirect:/login";
         }
 
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Copies must be a positive whole number (e.g. 0, 1, 2...).");
+            return "redirect:/admin/books/edit/" + book.getId();
+        }
+
         Book existingBook = bookService.getBookById(book.getId());
         if (existingBook == null) {
-            // Optional: handle missing book case
             return "redirect:/admin/books?error=notfound";
         }
 
@@ -240,10 +252,8 @@ public String addBook(@ModelAttribute Book book, Model model) {
         existingBook.setAuthors(book.getAuthors());
         existingBook.setYear(book.getYear());
         existingBook.setCopies(book.getCopies());
-        existingBook.setAuthors(book.getAuthors());
 
         bookService.saveBook(existingBook);
-
         return "redirect:/admin/books";
     }
     @DeleteMapping("/admin/books/delete/{id}")
