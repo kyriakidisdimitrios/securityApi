@@ -159,8 +159,7 @@ public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> paylo
             return "redirect:/cart";
         }
 
-        boolean integrityEnabled = (checkCardIntegrity != null);  // Will be null if unchecked
-
+        boolean integrityEnabled = (checkCardIntegrity != null);
         if (integrityEnabled && !isValidCardNumber(paymentInfo)) {
             redirectAttributes.addFlashAttribute("error", "Invalid card number.");
             return "redirect:/cart";
@@ -175,19 +174,16 @@ public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> paylo
             book.setCopies(Math.max(remaining, 0));
             totalPaid += book.getPrice() * item.getQuantity();
 
-            if (book.getCopies() == 0) {
-                //bookService.deleteBook(book.getId());
-                bookService.saveBook(book);
-            }
-            else {
-                bookService.saveBook(book);
-            }
+            bookService.saveBook(book); // save in both cases
         }
+
+        chartHistoryService.savePurchaseHistory(customer, cartItems, totalPaid);
 
         cartItemService.clearCart(customer);
         session.setAttribute("checkoutTotal", totalPaid);
-        return "redirect:/cart/checkout-popup"; // popup
+        return "redirect:/cart/checkout-popup";
     }
+
 
     private boolean isValidCardNumber(String number) {
         number = number.replaceAll("\\s+", "");

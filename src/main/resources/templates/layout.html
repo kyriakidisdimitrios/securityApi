@@ -39,6 +39,7 @@
             <a th:if="${session.isAdmin}" th:href="@{/admin/books}" class="text-warning me-3">
                 <i class="fas fa-cogs"></i> Admin Panel
             </a>
+            <a th:if="${session.loggedInUser}" th:href="@{/history}" class="text-white me-3">My History</a>
             <!-- If customer is logged in, show welcome and logout -->
             <span th:if="${session.loggedInUser}" class="text-white me-3">
                 Welcome, <strong th:text="${session.loggedInUser}">Customer</strong>

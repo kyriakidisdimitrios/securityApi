@@ -3,8 +3,10 @@ package com.example.securityapi.controller;
 import com.example.securityapi.exception.BookNotFoundException;
 import com.example.securityapi.model.Author;
 import com.example.securityapi.model.Book;
+import com.example.securityapi.model.ChartHistory;
 import com.example.securityapi.model.Customer;
 import com.example.securityapi.service.AuthorService;
+import com.example.securityapi.service.ChartHistoryService;
 import com.example.securityapi.service.CustomerService;
 import com.example.securityapi.service.BookService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -275,4 +277,7 @@ public String addBook(@ModelAttribute Book book, Model model) {
         model.addAttribute("customers", customers);
         return "admin_customers";
     }
+
+
+
 }
