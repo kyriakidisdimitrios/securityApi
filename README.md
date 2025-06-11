@@ -12,7 +12,7 @@ A full-stack web application for managing and purchasing books online, implement
 > **Programme**: MSc in Advanced Software Engineering  
 > **Semester**: Summer 2024/25  
 > **University College Dublin (UCD)**  
-> <img src="/images/crest-ucd.svg" alt="UCD Logo" width="160"/>
+> <img src="/src/main/resources/static/images/crest-ucd.svg" alt="UCD Logo" width="36"/>
 
 ---
 
