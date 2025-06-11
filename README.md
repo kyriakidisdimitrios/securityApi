@@ -105,6 +105,7 @@ ALTER TABLE customers AUTO_INCREMENT = 1;
 
 2b. Add a customer with privilede admin having username `admin` and password `admin`, and populate tables books, authors and book_authors.
 ```sql
+-- IMPORTANT NOTE: Run the program first in order to create the tables first.
 
 -- Note: First create the admin (hit commit), and the the other commands. It might cause "Error Code: 1054. Unknown column 'dateOfBirth' in 'field list'".
 -- Fixing needs to adjust date of birth to proper birth that MySQL needs. For me it is YYYY-MM-DD.
