@@ -7,6 +7,7 @@ import com.example.securityapi.model.CartItem;
 import com.example.securityapi.model.Customer;
 import com.example.securityapi.service.BookService;
 import com.example.securityapi.service.CartItemService;
+import com.example.securityapi.service.ChartHistoryService;
 import com.example.securityapi.service.CustomerService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -27,12 +28,16 @@ public class CartController {
     private final CustomerService customerService;
     private final BookService bookService;
 
+    private final ChartHistoryService chartHistoryService;
+
     public CartController(CartItemService cartItemService,
                           CustomerService customerService,
-                          BookService bookService) {
+                          BookService bookService,
+                          ChartHistoryService chartHistoryService) {
         this.cartItemService = cartItemService;
         this.customerService = customerService;
         this.bookService = bookService;
+        this.chartHistoryService = chartHistoryService;
     }
 
     @GetMapping

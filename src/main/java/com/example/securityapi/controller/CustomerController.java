@@ -205,26 +205,45 @@ public String addBook(@ModelAttribute Book book, Model model) {
             return "redirect:/login";
         }
 
-        // 1. Get the book to be edited (your existing code)
+        // 1. Get the book to be edited
         Book book = bookService.getBookById(id);
 
-        // 2. GET ALL AUTHORS from the database
-        List<Author> allAuthors = authorService.findAll(); // You need an findAll() method in your AuthorService
+        // --- FINAL DEBUGGING STEP ---
+        // Print the ID of the book THE MOMENT it comes back from the service.
+        System.out.println("FETCHED BOOK FOR EDIT PAGE. ID IS: " + book.getId());
+        // --- END DEBUGGING STEP ---
 
-        // 3. ADD BOTH the book AND the author list to the model
+        // 2. Get all authors for the dropdown
+        List<Author> allAuthors = authorService.findAll();
+
+        // 3. Add the book and authors to the model
         model.addAttribute("book", book);
-        model.addAttribute("allAuthors", allAuthors); // <-- THE NEW, REQUIRED LINE
+        model.addAttribute("allAuthors", allAuthors);
 
-        return "admin_edit_book"; // Your template name
+        return "admin_edit_book";
     }
 
     @PutMapping("/admin/books/update")
-    public String updateBook(@ModelAttribute Book book, HttpSession session) throws BookNotFoundException {
+    public String updateBook(@ModelAttribute("book") Book book, HttpSession session) throws BookNotFoundException {
         if (!Boolean.TRUE.equals(session.getAttribute("isAdmin"))) {
             return "redirect:/login";
         }
 
-        bookService.updateBook(book.getId(), book);
+        Book existingBook = bookService.getBookById(book.getId());
+        if (existingBook == null) {
+            // Optional: handle missing book case
+            return "redirect:/admin/books?error=notfound";
+        }
+
+        existingBook.setTitle(book.getTitle());
+        existingBook.setPrice(book.getPrice());
+        existingBook.setAuthors(book.getAuthors());
+        existingBook.setYear(book.getYear());
+        existingBook.setCopies(book.getCopies());
+        existingBook.setAuthors(book.getAuthors());
+
+        bookService.saveBook(existingBook);
+
         return "redirect:/admin/books";
     }
     @DeleteMapping("/admin/books/delete/{id}")

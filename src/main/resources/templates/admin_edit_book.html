@@ -13,14 +13,12 @@
   <h2 class="text-center mb-4">✏️ Edit Book</h2>
 
   <form th:action="@{/admin/books/update}" method="post" th:object="${book}">
-    <!-- Support PUT method -->
     <input type="hidden" name="_method" value="put"/>
-
-    <input type="hidden" th:field="*{id}" />
+    <input type="hidden" th:field="*{id}"/>
 
     <div class="mb-3">
-      <label class="form-label">Title</label>
-      <input type="text" class="form-control" th:field="*{title}" required>
+      <label for="title" class="form-label">Title</label>
+      <input type="text" id="title" class="form-control" th:field="*{title}" required>
     </div>
 
     <div class="mb-3">
@@ -29,25 +27,24 @@
         <option th:each="author : ${allAuthors}"
                 th:value="${author.id}"
                 th:text="|${author.firstName} ${author.lastName}|">
-          Author Name
         </option>
       </select>
       <small class="form-text text-muted">Hold down Ctrl (or Cmd on Mac) to select multiple authors.</small>
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Year</label>
-      <input type="number" class="form-control" th:field="*{year}" min="0" required>
+      <label for="year" class="form-label">Year</label>
+      <input type="number" id="year" class="form-control" th:field="*{year}" min="0" required>
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Price (€)</label>
-      <input type="number" class="form-control" th:field="*{price}" step="0.01" required>
+      <label for="price" class="form-label">Copies</label>
+      <input type="number" id="price" class="form-control" th:field="*{copies}" step="0.01" required>
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Copies</label>
-      <input type="number" class="form-control" th:field="*{copies}" min="0" required>
+      <label for="copies" class="form-label">Price (€)</label>
+      <input type="number" id="copies" class="form-control" th:field="*{price}" min="0" required>
     </div>
 
     <div class="d-grid">
@@ -55,9 +52,6 @@
     </div>
   </form>
 
-<!--  <div class="text-center mt-3">-->
-<!--    <a th:href="@{/admin/books}">← Back to Book List</a>-->
-<!--  </div>-->
 </section>
 
 </body>

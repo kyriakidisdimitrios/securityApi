@@ -49,12 +49,11 @@
         <span th:text="${error}">An error occurred.</span>
     </div>
 
-    <!-- Empty Cart Message -->
-<!--    <div th:if="${#lists.isEmpty(cartItems)}">-->
-<!--        <div class="alert alert-info text-center" role="alert">-->
-<!--            Your cart is currently empty.-->
-<!--        </div>-->
-<!--    </div>-->
+    <div th:if="${#lists.isEmpty(cartItems)}">
+        <div class="alert alert-info text-center" role="alert">
+            Your cart is currently empty.
+        </div>
+    </div>
 
     <!-- Cart Table -->
     <div th:if="${not #lists.isEmpty(cartItems)}">
@@ -73,9 +72,13 @@
             <tbody>
             <tr th:each="item : ${cartItems}">
                 <td th:text="${item.book.title}">Book Title</td>
+
+                <td>
                 <span th:each="author, iterStat : ${item.book.authors}">
-            <span th:text="|${author.firstName} ${author.lastName}|"></span><span th:if="${!iterStat.last}">, </span>
-        </span>
+                <span th:text="${author.firstName + ' ' + author.lastName}"></span>
+                <span th:if="${!iterStat.last}">, </span>
+                </span>
+                </td>
                 <td th:text="${item.book.year}">Year</td>
                 <td th:text="${#numbers.formatDecimal(item.book.price, 1, 2)} + ' €'">Price</td>
                 <td>
