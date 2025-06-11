@@ -160,7 +160,7 @@ Java version: 21, vendor: Oracle Corporation (or OpenJDK)
 
 ---
 
-## 📷 Preview (Optional)
+## 📷 Preview
 
 <img src="/src/main/resources/static/images/preview.png" alt="Store preview" width="900"/>
 
