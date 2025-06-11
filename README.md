@@ -284,6 +284,8 @@ Java version: 21, vendor: Oracle Corporation (or OpenJDK)
 ---
 
 ✅ Now you're all set. If anything breaks, it's probably the database or Java setup—double check `JAVA_HOME`, `Path`, and your database URL/credentials!
+
 🧠 This project was assisted using **[ChatGPT 4.0](https://chat.openai.com/chat)** and development logs can be found at [`/chatgpt`](./chatgpt).
+
 ❗ ** For any questions, don't hesitate to send me an email or contact me on [LinkedIn](https://www.linkedin.com/in/kyriakidis-demetrios/).**
 
