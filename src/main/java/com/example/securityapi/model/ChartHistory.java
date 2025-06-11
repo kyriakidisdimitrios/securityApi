@@ -1,24 +1,27 @@
 package com.example.securityapi.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-
+import jakarta.persistence.*;
+import lombok.*; // Import Lombok if you want to use its annotations
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "chart_history") // Good practice to name the table explicitly
+@Getter @Setter @NoArgsConstructor // Recommended Lombok annotations
 public class ChartHistory {
     @Id
     @GeneratedValue
     private Long id;
 
+    // --- THIS IS THE NEW CONNECTION ---
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+    // ------------------------------------
+
     private String chartType;
 
     @Lob
-    private String chartData; // Store serialized chart input (e.g., JSON)
+    private String chartData;
 
     private LocalDateTime timestamp;
-
-    // optional: link to user if multi-user
 }

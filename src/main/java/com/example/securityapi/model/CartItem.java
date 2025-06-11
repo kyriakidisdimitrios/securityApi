@@ -10,6 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+//CartItem -> Customer & Book (Many-to-One)
 public class CartItem {
 
     @Id

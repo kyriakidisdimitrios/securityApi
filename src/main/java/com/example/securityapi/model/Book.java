@@ -14,6 +14,7 @@ import java.util.Set;
 @Getter
 @Setter
 
+//Book <-> Author (Many-to-Many)
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
