@@ -86,6 +86,7 @@ Typical MySQL commands:
 2a. 
 Delete entires:
 ```sql
+
 SET SQL_SAFE_UPDATES = 0;
 DELETE FROM cart_items;
 DELETE FROM book_authors;
@@ -104,9 +105,20 @@ ALTER TABLE customers AUTO_INCREMENT = 1;
 
 2b. Add a customer with privilede admin having username `admin` and password `admin`, and populate tables books, authors and book_authors.
 ```sql
+
+-- Note: First create the admin (hit commit), and the the other commands. It might cause "Error Code: 1054. Unknown column 'dateOfBirth' in 'field list'".
+-- Fixing needs to adjust date of birth to proper birth that MySQL needs. For me it is YYYY-MM-DD.
+
 -- 🧑‍💼CREATE ADMIN. USERNAME: admin PASSWORD: admin
 
+INSERT INTO customers (
+    username, name, surname, date_of_birth, address, phone_number, email, password, is_admin
+) VALUES (
+    'admin', 'Admin', 'User', '2000-01-01', 'System Address', '000-000-0000', 'admin@system.com', 'admin', true
+);
+
 -- 🧑‍💼 AUTHORS
+
 INSERT INTO authors (first_name, last_name) VALUES ('J.R.R.', 'Tolkien');
 INSERT INTO authors (first_name, last_name) VALUES ('George R.R.', 'Martin');
 INSERT INTO authors (first_name, last_name) VALUES ('J.K.', 'Rowling');
@@ -119,6 +131,7 @@ INSERT INTO authors (first_name, last_name) VALUES ('Jane', 'Austen');
 INSERT INTO authors (first_name, last_name) VALUES ('Mark', 'Twain');
 
 -- 📚 BOOKS
+
 INSERT INTO books (title, year, price, copies) VALUES ('The Hobbit', 1937, 18.99, 10);
 INSERT INTO books (title, year, price, copies) VALUES ('A Game of Thrones', 1996, 22.5, 8);
 INSERT INTO books (title, year, price, copies) VALUES ('Harry Potter and the Philosopher Stone', 1997, 20.0, 12);
@@ -132,6 +145,7 @@ INSERT INTO books (title, year, price, copies) VALUES ('Adventures of Huckleberr
 INSERT INTO books (title, year, price, copies) VALUES ('Collaborative Tales', 2024, 25.0, 5);
 
 -- 🔗 BOOK-AUTHOR RELATIONSHIPS
+
 INSERT INTO book_authors (book_id, author_id)
 VALUES ((SELECT id FROM books WHERE title = 'The Hobbit' LIMIT 1),
         (SELECT id FROM authors WHERE first_name = 'J.R.R.' AND last_name = 'Tolkien' LIMIT 1));
