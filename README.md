@@ -117,6 +117,7 @@ INSERT INTO customers (
     'admin', 'Admin', 'User', '2000-01-01', 'System Address', '000-000-0000', 'admin@system.com', 'admin', true
 );
 
+
 -- 🧑‍💼 AUTHORS
 
 INSERT INTO authors (first_name, last_name) VALUES ('J.R.R.', 'Tolkien');
@@ -193,6 +194,8 @@ VALUES ((SELECT id FROM books WHERE title = 'Collaborative Tales' LIMIT 1),
 INSERT INTO book_authors (book_id, author_id)
 VALUES ((SELECT id FROM books WHERE title = 'Collaborative Tales' LIMIT 1),
         (SELECT id FROM authors WHERE first_name = 'George R.R.' AND last_name = 'Martin' LIMIT 1));
+
+--BEFORE USING THE WEB APPLICATION, LOGOUT FROM USER.
 ```
 
 3. Update your Spring config file `src/main/resources/application.properties`:
