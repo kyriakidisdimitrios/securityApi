@@ -82,7 +82,8 @@ cd securityApi
 CREATE DATABASE bookstore;
 ```
 
-2a. Typical MySQL commands:
+Typical MySQL commands:
+2a. 
 Delete entires:
 ```sql
 SET SQL_SAFE_UPDATES = 0;
@@ -92,10 +93,19 @@ DELETE FROM books;
 DELETE FROM authors;
 DELETE FROM customers;
 SET SQL_SAFE_UPDATES = 1;
+
+-- Reset auto-increment counters
+ALTER TABLE cart_items AUTO_INCREMENT = 1;
+ALTER TABLE book_authors AUTO_INCREMENT = 1;
+ALTER TABLE books AUTO_INCREMENT = 1;
+ALTER TABLE authors AUTO_INCREMENT = 1;
+ALTER TABLE customers AUTO_INCREMENT = 1;
 ```
 
 2b. Add a customer with privilede admin having username `admin` and password `admin`, and populate tables books, authors and book_authors.
 ```sql
+-- 🧑‍💼CREATE ADMIN. USERNAME: admin PASSWORD: admin
+
 -- 🧑‍💼 AUTHORS
 INSERT INTO authors (first_name, last_name) VALUES ('J.R.R.', 'Tolkien');
 INSERT INTO authors (first_name, last_name) VALUES ('George R.R.', 'Martin');
