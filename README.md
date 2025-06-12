@@ -37,7 +37,9 @@ A full-stack web application for managing and purchasing books online, implement
 
 1.
   [jdk.java.net](https://jdk.java.net/21/)  Superseded 
+
   [Adoptium (Temurin)](https://adoptium.net/) **Recommended**: Actively maintained
+
   [Amazon Corretto](https://docs.aws.amazon.com/corretto/latest/corretto-21-ug/downloads-list.html)
 
 
