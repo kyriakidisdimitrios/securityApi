@@ -3,8 +3,7 @@ package com.example.securityapi.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,7 +12,9 @@ import java.util.Set;
 @Table(name = "books")
 @Getter
 @Setter
-
+//@Data
+@NoArgsConstructor
+@AllArgsConstructor
 //Book <-> Author (Many-to-Many)
 public class Book {
     @Id
@@ -22,7 +23,7 @@ public class Book {
 
     private String title;
     private int year;
-    private double price;
+    private Double price;
     @NotNull(message = "Copies is required")
     @Min(value = 0, message = "Copies must be 0 or more")
     private int copies;
@@ -35,8 +36,8 @@ public class Book {
     )
     private Set<Author> authors = new HashSet<>();
 
-    public Book() {}
-
+//    public Book() {}
+//
     public Set<Author> getAuthors() {
         return authors;
     }

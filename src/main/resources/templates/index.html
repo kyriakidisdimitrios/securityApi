@@ -42,8 +42,8 @@
                     </p>
                     <p class="card-text">
                         <strong>Year:</strong> <span th:text="${book.year}">Year</span><br/>
-                        <strong>Price:</strong> <span th:text="${#numbers.formatDecimal(book.price, 1, 2)} + ' €'">0.00 €</span>
-                    </p>
+                        <strong>Price:</strong>
+                        <span th:text="${#numbers.formatDecimal(book.price, 1, 2)} + ' €'">0.00 €</span>        </p>
                 </div>
 
                 <div class="card-footer text-center">

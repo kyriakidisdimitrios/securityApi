@@ -2,23 +2,21 @@ package com.example.securityapi.service;
 
 import com.example.securityapi.model.Customer;
 import com.example.securityapi.repository.CustomerRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class CustomerService {
-
     private final CustomerRepository customerRepository;
-
     public CustomerService(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
     }
-
     public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
     }
-
+    //@Transactional
     public void saveCustomer(Customer customer) {
         customerRepository.save(customer);
     }

@@ -14,28 +14,22 @@ import java.util.Set;
 
 @Service
 public class BookService {
-
     private final BookRepository bookRepository;
     private final CartItemRepository cartItemRepository;
     public BookService(BookRepository bookRepository, CartItemRepository cartItemRepository) {
-
         this.bookRepository = bookRepository;
         this.cartItemRepository = cartItemRepository;
     }
-
     public List<Book> findAllBooks() {
         return bookRepository.findAll();
     }
-
 //    public Optional<Book> getBookById(Long id) {
 //        return bookRepository.findById(id);
 //    }
-
     public Book getBookById(Long id) throws BookNotFoundException {
         return bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException(id));
     }
-
     public boolean bookExists(String title, Set<Author> authors, int year) {
         List<Book> books = bookRepository.findByTitleAndYear(title, year);
         for (Book book : books) {
@@ -46,8 +40,6 @@ public class BookService {
         }
         return false;
     }
-
-
     public Book saveBook(Book book) {
         return bookRepository.save(book);
     }
@@ -66,7 +58,6 @@ public class BookService {
 public Book updateBook(Long id, Book updatedBookData) throws BookNotFoundException {
     Book existingBook = bookRepository.findById(id)
             .orElseThrow(() -> new BookNotFoundException(id));
-
     existingBook.setTitle(updatedBookData.getTitle());
     existingBook.setAuthors(updatedBookData.getAuthors()); // ✅ Update authors as a Set
     existingBook.setYear(updatedBookData.getYear());
@@ -90,6 +81,4 @@ public void deleteBook(Long id) throws BookNotFoundException {
     public List<Book> searchBooks(String keyword) {
         return bookRepository.searchByTitleOrAuthor(keyword);
     }
-
-
 }

@@ -13,14 +13,12 @@ import java.util.List;
 
 @Service
 public class CartItemService {
-
     private final CartItemRepository cartItemRepository;
     private final BookService bookService;
     public CartItemService(CartItemRepository cartItemRepository, BookService bookService) {
         this.cartItemRepository = cartItemRepository;
         this.bookService = bookService;
     }
-
     public List<CartItem> getCartItems(Customer customer) {
         return cartItemRepository.findByCustomer(customer);
     }
@@ -53,7 +51,6 @@ public class CartItemService {
 //            .build();
 //    cartItemRepository.save(item);
 //}
-
     public void addToCart(Customer customer, Long bookId, int quantity) throws BookNotFoundException, CartItemException {
         Book book = bookService.getBookById(bookId);
         if (quantity <= 0) {
@@ -134,9 +131,10 @@ public class CartItemService {
         cartItem.setQuantity(quantity);
         cartItemRepository.save(cartItem);
     }
-    public int getTotalQuantityForCustomer(Customer customer) {
+    public int getTotalQuantityForCustomer(Customer customer) { //Fetches all CartItem. Returns a List<CartItem>
         return cartItemRepository.findByCustomer(customer).stream()
-                .mapToInt(CartItem::getQuantity)
+                .mapToInt(CartItem::getQuantity)//Converts each CartItem object in the stream into its quantity value (int).
+                                                //Result: IntStream of quantities like 2, 1, 3, ...
                 .sum();
     }
 }

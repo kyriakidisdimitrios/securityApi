@@ -6,10 +6,12 @@ import lombok.*;
 
 @Entity
 @Table(name = "cart_items")
-@Data
+//@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 //CartItem -> Customer & Book (Many-to-One)
 public class CartItem {
 
