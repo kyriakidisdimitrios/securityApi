@@ -32,5 +32,6 @@ jobs:
             </servers>
           </settings>" > ~/.m2/settings.xml
 
-      - name: Build and Deploy with Maven
-        run: mvn clean deploy -B
+- name: Build and Deploy with Maven
+  run: mvn clean deploy -B -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/kyriakidisdimitrios/securityApi
+
