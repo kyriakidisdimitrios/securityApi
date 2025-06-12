@@ -35,8 +35,11 @@ A full-stack web application for managing and purchasing books online, implement
 
 ### ✅ Step 1: Install Java 21 (OpenJDK)
 
-1. Visit the official OpenJDK builds:  
-   👉 [https://jdk.java.net/21/](https://jdk.java.net/21/)
+1.
+| [jdk.java.net](https://jdk.java.net/21/) | Official reference builds by the OpenJDK Project | May be archived or marked as superseded |
+| [Adoptium (Temurin)](https://adoptium.net/) | Eclipse Temurin builds (formerly AdoptOpenJDK) | **Recommended**: Actively maintained, production-ready |
+| [Amazon Corretto](https://docs.aws.amazon.com/corretto/latest/corretto-21-ug/downloads-list.html) | Amazon’s long-term support OpenJDK build | Valid and optimized for cloud deployments |
+
 
 2. Download the correct installer for your OS (Windows/Linux/macOS).
 
