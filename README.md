@@ -72,6 +72,11 @@ cd securityApi
 ---
 
 ### ✅ Step 3: Install & Configure MySQL
+## ⚠️ Important
+
+**‼️ When running the program from IntelliJ, make sure `SecurityApiApplication` is selected!**
+
+![SecurityApiApplication](src/main/resources/static/images/SecurityApiApplication.png)
 
 1. Install MySQL from:  
    👉 [https://dev.mysql.com/downloads/installer/](https://dev.mysql.com/downloads/installer/)

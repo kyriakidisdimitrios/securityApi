@@ -1,18 +1,13 @@
 package com.example.securityapi;
 
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 
-import java.util.Arrays;
-
-@SpringBootApplication
+@SpringBootApplication //entry point of your Spring Boot application.
 public class SecurityApiApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(SecurityApiApplication.class, args);
+        //This starts the Spring Boot application using an embedded Tomcat server
     }
 //    @Bean
 //    public CommandLineRunner commandLineRunner(ApplicationContext ctx) {

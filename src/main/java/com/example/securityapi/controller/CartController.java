@@ -9,6 +9,8 @@ import com.example.securityapi.service.BookService;
 import com.example.securityapi.service.CartItemService;
 import com.example.securityapi.service.ChartHistoryService;
 import com.example.securityapi.service.CustomerService;
+import com.example.securityapi.utilities.CardValidator;
+import jakarta.persistence.Converts;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,13 +23,12 @@ import java.util.Map;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/cart")
+@RequestMapping("/cart") //Maps all methods starting with /cart
 public class CartController {
 
     private final CartItemService cartItemService;
     private final CustomerService customerService;
     private final BookService bookService;
-
     private final ChartHistoryService chartHistoryService;
 
     public CartController(CartItemService cartItemService,
@@ -40,7 +41,7 @@ public class CartController {
         this.chartHistoryService = chartHistoryService;
     }
 
-    @GetMapping
+    @GetMapping //@GetMapping becomes /cart
     public String viewCart(Model model, HttpSession session) {
         String username = (String) session.getAttribute("loggedInUser");
         if (username == null) return "redirect:/login";
@@ -48,7 +49,9 @@ public class CartController {
         Customer customer = customerService.findByUsername(username);
         List<CartItem> cartItems = cartItemService.getCartItems(customer);
 
-        double totalPrice = cartItems.stream()
+        double totalPrice = cartItems.stream()//Creates a stream from the cart items
+                                              //Maps each item to a subtotal: price * quantity
+                                              //Converts to a double stream and sums them up
                 .mapToDouble(item -> item.getBook().getPrice() * item.getQuantity())
                 .sum();
 
@@ -59,9 +62,9 @@ public class CartController {
     }
 
    // @PostMapping("/update")
-   @PutMapping("/update-ajax")
-   @ResponseBody
-   public Map<String, Object> updateCartAjax(@RequestBody Map<String, String> payload, HttpSession session) {
+   @PutMapping("/update-ajax") //updating
+   @ResponseBody //Tells Spring not to render a view, but instead return the object (usually a Map or JSON) directly in the HTTP response body. Used for AJAX/REST responses.
+   public Map<String, Object> updateCartAjax(@RequestBody Map<String, String> payload, HttpSession session) { //@RequestBody Maps the incoming JSON body of a POST/PUT/DELETE request to a Map<String, String> or custom object. Useful for AJAX (not form posts).
        String username = (String) session.getAttribute("loggedInUser");
        Map<String, Object> response = new HashMap<>();
 
@@ -84,7 +87,7 @@ public class CartController {
        return response;
    }
 
-    @PostMapping("/add")
+    @PostMapping("/add") //@PostMapping("/add") becomes /cart/add
     public String addToCart(@RequestParam("bookId") Long bookId,
                             @RequestParam(defaultValue = "1") int quantity,
                             HttpSession session,
@@ -92,15 +95,17 @@ public class CartController {
         String username = (String) session.getAttribute("loggedInUser");
         if (username == null) {
             return "redirect:/login";
+
         }
         try {
             Customer customer = customerService.findByUsername(username);
             cartItemService.addToCart(customer, bookId, quantity);
-            redirectAttributes.addFlashAttribute("successMessage", "Book added to cart successfully!");
+            redirectAttributes.addFlashAttribute("successMessage", "Book added to cart successfully!"); ////This is used to pass flash messages (one-time attributes) during a redirect
 
         } catch (BookNotFoundException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/books"; // Redirect to the main book list page
+            return "redirect:/books"; //The prefix redirect: tells Spring not to render a template called cart.html, but instead send a client-side HTTP redirect to /cart.
+            //This avoids double form submissions and follows the POST-Redirect-GET pattern.// Redirect to the main book list page
 
         } catch (CartItemException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -119,14 +124,14 @@ public class CartController {
 //        return "redirect:/cart";
 //    }
     //@PostMapping("/remove")
-@DeleteMapping("/remove-ajax")
+@DeleteMapping("/remove-ajax") //@DeleteMapping("/remove-ajax"): This is an endpoint for AJAX-based cart item removal (uses fetch or $.ajax)
 @ResponseBody
-public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> payload, HttpSession session) {
+public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> payload, HttpSession session) { //@RequestBody Map<String, String> payload: Reads JSON payload like {"cartItemId": "123"}
     String username = (String) session.getAttribute("loggedInUser");
-    Map<String, Object> response = new HashMap<>();
+    Map<String, Object> response = new HashMap<>(); //Map<String, Object> response = new HashMap<>();: Will hold response data like:{"success": true, "message": "Removed successfully"}
 
     if (username == null) {
-        response.put("success", false);
+        response.put("success", false); //"Add a key "success" to the map with value true.
         response.put("message", "Not logged in");
         return response;
     }
@@ -160,7 +165,8 @@ public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> paylo
         }
 
         boolean integrityEnabled = (checkCardIntegrity != null);
-        if (integrityEnabled && !isValidCardNumber(paymentInfo)) {
+        //if (integrityEnabled && !isValidCardNumber(paymentInfo)) {
+        if (integrityEnabled && !CardValidator.isValidCardNumber(paymentInfo)) {
             redirectAttributes.addFlashAttribute("error", "Invalid card number.");
             return "redirect:/cart";
         }
@@ -181,27 +187,34 @@ public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> paylo
 
         cartItemService.clearCart(customer);
         session.setAttribute("checkoutTotal", totalPaid);
-        return "redirect:/cart/checkout-popup";
+        return "redirect:/cart/checkout-popup"; //(URL-based redirection) @GetMapping("/checkout-popup") -> return "checkout" (controller-based rendering)
     }
+/*
+POST /cart/checkout
+→ return "redirect:/cart/checkout-popup"
+→ browser navigates to /cart/checkout-popup
+→ @GetMapping("/checkout-popup") is invoked
+→ return "checkout"
+→ renders checkout.html
+ */
 
-
-    private boolean isValidCardNumber(String number) {
-        number = number.replaceAll("\\s+", "");
-        if (!number.matches("\\d{13,19}")) return false;
-
-        int sum = 0;
-        boolean alternate = false;
-        for (int i = number.length() - 1; i >= 0; i--) {
-            int n = Integer.parseInt(number.substring(i, i + 1));
-            if (alternate) {
-                n *= 2;
-                if (n > 9) n -= 9;
-            }
-            sum += n;
-            alternate = !alternate;
-        }
-        return (sum % 10 == 0);
-    }
+//    private boolean isValidCardNumber(String number) {
+//        number = number.replaceAll("\\s+", "");
+//        if (!number.matches("\\d{13,19}")) return false;
+//
+//        int sum = 0;
+//        boolean alternate = false;
+//        for (int i = number.length() - 1; i >= 0; i--) {
+//            int n = Integer.parseInt(number.substring(i, i + 1));
+//            if (alternate) {
+//                n *= 2;
+//                if (n > 9) n -= 9;
+//            }
+//            sum += n;
+//            alternate = !alternate;
+//        }
+//        return (sum % 10 == 0);
+//    }
     @GetMapping("/checkout-popup")
     public String checkoutPopup(HttpSession session, Model model) {
         Double total = (Double) session.getAttribute("checkoutTotal");

@@ -9,12 +9,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 @Service
 public class ChartHistoryService {
 
     private final ChartHistoryRepository chartHistoryRepository;
-
     public ChartHistoryService(ChartHistoryRepository chartHistoryRepository) {
         this.chartHistoryRepository = chartHistoryRepository;
     }
@@ -48,20 +46,17 @@ public class ChartHistoryService {
 //    }
     public void savePurchaseHistory(Customer customer, List<CartItem> items, double totalPaid) {
         if (items == null || items.isEmpty()) return;
-
         StringBuilder sb = new StringBuilder();
         for (CartItem item : items) {
             Book book = item.getBook();
             sb.append(String.format("Book: %s, Qty: %d, Price: %.2f €%n",
                     book.getTitle(), item.getQuantity(), book.getPrice()));
         }
-
         ChartHistory history = new ChartHistory();
         history.setCustomer(customer);
         history.setTimestamp(LocalDateTime.now());
         history.setChartType("Purchase"); // or any descriptive title
         history.setChartData(sb.toString());
-
         chartHistoryRepository.save(history);
     }
 }

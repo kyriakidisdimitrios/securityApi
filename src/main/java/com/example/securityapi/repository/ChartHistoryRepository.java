@@ -8,5 +8,4 @@ import java.util.List;
 public interface ChartHistoryRepository extends JpaRepository<ChartHistory, Long> {
     List<ChartHistory> findAllByOrderByTimestampDesc();
     List<ChartHistory> findByCustomerOrderByTimestampDesc(Customer customer);
-
 }

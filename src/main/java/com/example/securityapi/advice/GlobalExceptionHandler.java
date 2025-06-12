@@ -10,10 +10,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+//Avoid duplicated error-handling logic
+//
+//Centralize all controller-level exception handling
+//
+//Improve maintainability
+//@ExceptionHandler(BindException.class) is triggered when Spring fails to bind a request parameter to a method parameter
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler(MethodArgumentNotValidException.class) // No need to trigger
     public String handleValidationError(MethodArgumentNotValidException ex, RedirectAttributes redirectAttributes) {
         logger.warn("Validation error: {}", ex.getMessage());
         redirectAttributes.addFlashAttribute("errorMessage", "Invalid input: " + ex.getMessage());

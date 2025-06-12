@@ -48,21 +48,32 @@ public class CustomerController {
 //    public String home() {
 //        return "index";
 //    }
-    @GetMapping("")
-    public String viewHomePage(@RequestParam(name = "keyword", required = false) String keyword,
-                               Model model, HttpSession session) {
-        List<Book> books;
-        if (keyword != null && !keyword.isEmpty()) {
-            // Fetch books matching title or author containing the keyword
-            books = bookService.searchBooks(keyword);  // e.g., uses repository to search in title or author
-        } else {
-            // No keyword provided, fetch all books
-            books = bookService.findAllBooks();
-        }
-        model.addAttribute("books", books);
-        model.addAttribute("keyword", keyword);  // preserve the search term in the view
-        return "index";  // Render index.html Thymeleaf template
+@GetMapping("")
+public String viewHomePage(@RequestParam(name = "keyword", required = false) String keyword,
+                           Model model, HttpSession session) {
+    List<Book> books;
+    if (keyword != null && !keyword.isEmpty()) {
+        books = bookService.searchBooks(keyword);
+    } else {
+        books = bookService.findAllBooks();
     }
+
+    // ✅ Safely filter books into a new list
+    List<Book> filteredBooks = books.stream()
+            .filter(book ->
+                    book != null &&
+                            book.getTitle() != null &&
+                            book.getAuthors() != null &&
+                            !book.getAuthors().isEmpty() &&
+                            book.getPrice() != null
+            )
+            .toList();
+
+    model.addAttribute("books", filteredBooks);
+    model.addAttribute("keyword", keyword);
+    return "index";
+}
+
     // Customer list page
     @GetMapping("/customers")
     public String listCustomers(Model model) {
@@ -74,14 +85,14 @@ public class CustomerController {
 
     // Show registration form
     @GetMapping("/register")
-    public String showRegisterForm(Model model) {
+    public String showRegisterForm(Model model) { //Manually add empty object to the view. 	Server → View
         model.addAttribute("customer", new Customer());
         return "register";
     }
 
     // Process registration
     @PostMapping("/register")
-    public String registerCustomer(@ModelAttribute("customer") Customer customer) {
+    public String registerCustomer(@ModelAttribute("customer") Customer customer) { //binds data from form inputs. View → Server
         customerService.saveCustomer(customer);
         return "redirect:/login";
     }

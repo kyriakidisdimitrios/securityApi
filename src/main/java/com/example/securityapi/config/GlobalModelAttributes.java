@@ -9,6 +9,13 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.ui.Model;
 
+//Inject dynamic model data globally into all views without repeating logic in every controller.
+
+//Triggered on every request handled by a controller
+//
+//It is triggered before the controller method executes
+//
+//Only active for controllers in the same component scan (usually your main app package)
 @ControllerAdvice
 public class GlobalModelAttributes {
 
