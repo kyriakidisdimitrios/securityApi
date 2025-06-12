@@ -3,7 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/kyriakidisdimitrios/securityApi</url>
+        </repository>
+    </distributionManagement>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -11,9 +17,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>com.example</groupId>
-    <artifactId>securityApi</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <groupId>io.github.kyriakidisdimitrios</groupId>
+    <artifactId>securityapi</artifactId>
+    <version>0.0.1</version>
     <name>securityApi</name>
     <description>Spring Boot security API project</description>
 
