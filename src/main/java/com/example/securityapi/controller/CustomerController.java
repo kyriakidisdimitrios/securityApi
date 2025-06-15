@@ -215,7 +215,6 @@ public String addBook(@ModelAttribute Book book, Model model) {
     bookService.saveBook(book);
     return "redirect:/admin/books";
 }
-
     @GetMapping("/admin/books/edit/{id}")
     public String showEditBookForm(@PathVariable Long id, Model model, HttpSession session) throws BookNotFoundException {
         if (!Boolean.TRUE.equals(session.getAttribute("isAdmin"))) {
@@ -239,7 +238,6 @@ public String addBook(@ModelAttribute Book book, Model model) {
 
         return "admin_edit_book";
     }
-
     @PutMapping("/admin/books/update")
     public String updateBook(@Valid @ModelAttribute("book") Book book,
                              BindingResult bindingResult,
@@ -288,7 +286,59 @@ public String addBook(@ModelAttribute Book book, Model model) {
         model.addAttribute("customers", customers);
         return "admin_customers";
     }
+    @GetMapping("/admin/authors")
+    public String manageAuthors(Model model, HttpSession session,
+                                @ModelAttribute("error") String errorMessage) {
+        if (!Boolean.TRUE.equals(session.getAttribute("isAdmin"))) {
+            return "redirect:/login";
+        }
 
+        List<Author> authors = authorService.findAll();
+        model.addAttribute("authors", authors);
+        model.addAttribute("newAuthor", new Author()); // for add form
 
+        // ✅ Pass flash error to template as "errorMessage"
+        if (errorMessage != null && !errorMessage.isEmpty()) {
+            model.addAttribute("errorMessage", errorMessage);
+        }
 
+        return "admin_manage_authors";
+    }
+    @PostMapping("/admin/authors/add")
+    public String addAuthor(@ModelAttribute Author author,
+                            RedirectAttributes redirectAttributes,
+                            HttpSession session) {
+
+        if (!Boolean.TRUE.equals(session.getAttribute("isAdmin"))) {
+            return "redirect:/login";
+        }
+
+        if (authorService.exists(author.getFirstName(), author.getLastName())) {
+            redirectAttributes.addFlashAttribute("error", "Author already exists.");
+            return "redirect:/admin/authors";
+        }
+
+        authorService.add(author);
+        return "redirect:/admin/authors";
+    }
+    @DeleteMapping("/admin/authors/delete/{id}")
+    public String deleteAuthor(@PathVariable Long id,
+                               RedirectAttributes redirectAttributes,
+                               HttpSession session) {
+
+        if (!Boolean.TRUE.equals(session.getAttribute("isAdmin"))) {
+            return "redirect:/login";
+        }
+
+        Author author = authorService.findById(id);
+        if (author == null) {
+            redirectAttributes.addFlashAttribute("error", "Author not found.");
+        } else if (!author.getBooks().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Cannot delete author assigned to books.");
+        } else {
+            authorService.deleteById(id);
+        }
+
+        return "redirect:/admin/authors";
+    }
 }
