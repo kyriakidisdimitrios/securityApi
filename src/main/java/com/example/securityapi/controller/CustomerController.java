@@ -104,22 +104,24 @@ public String viewHomePage(@RequestParam(name = "keyword", required = false) Str
             return "register";
         }
 
-        // ✅ Manual DOB validation
         if (customer.getDateOfBirth().isBefore(LocalDate.of(1900, 1, 1)) ||
                 customer.getDateOfBirth().isAfter(LocalDate.of(2010, 12, 31))) {
             result.rejectValue("dateOfBirth", "error.customer", "Date of birth must be between 1900 and 2010");
             return "register";
         }
 
-        // ✅ Check for duplicate username
         if (customerService.findByUsername(customer.getUsername()) != null) {
             result.rejectValue("username", "error.customer", "Username already exists");
             return "register";
         }
 
-        // ✅ Check for duplicate email
         if (customerService.findByEmail(customer.getEmail()) != null) {
             result.rejectValue("email", "error.customer", "Email already exists");
+            return "register";
+        }
+
+        if (customerService.findByPhoneNumber(customer.getPhoneNumber()) != null) {
+            result.rejectValue("phoneNumber", "error.customer", "Phone number already exists");
             return "register";
         }
 

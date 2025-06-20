@@ -34,4 +34,7 @@ public class CustomerService {
     public Customer findByEmail(String email) {
         return customerRepository.findByEmail(email).orElse(null);
     }
+    public Customer findByPhoneNumber(String phoneNumber) {
+        return customerRepository.findByPhoneNumber(phoneNumber).orElse(null);
+    }
 }
