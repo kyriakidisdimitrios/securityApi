@@ -115,13 +115,12 @@ public String viewHomePage(@RequestParam(name = "keyword", required = false) Str
             return "register";
         }
 
-        if (customerService.findByEmail(customer.getEmail()) != null) {
-            result.rejectValue("email", "error.customer", "Email already exists");
-            return "register";
-        }
-
         if (customerService.findByPhoneNumber(customer.getPhoneNumber()) != null) {
             result.rejectValue("phoneNumber", "error.customer", "Phone number already exists");
+            return "register";
+        }
+        if (customerService.findByEmail(customer.getEmail()) != null) {
+            result.rejectValue("email", "error.customer", "Email already exists");
             return "register";
         }
 
