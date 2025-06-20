@@ -1,0 +1,36 @@
+<!-- src/main/resources/templates/customers.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout">
+<head>
+    <title>Customers</title>
+</head>
+<body>
+<section class="container mt-4">
+    <h2>Registered Customers</h2>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Surname</th>
+            <th>Date of Birth</th>
+            <th>Address</th>
+            <th>Phone</th>
+            <th>Email</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="customer : ${customers}">
+            <td th:text="${customer.id}">1</td>
+            <td th:text="${customer.name}">John</td>
+            <td th:text="${customer.surname}">Doe</td>
+            <td th:text="${customer.dateOfBirth}">1990-01-01</td>
+            <td th:text="${customer.address}">123 Main St</td>
+            <td th:text="${customer.phoneNumber}">1234567890</td>
+            <td th:text="${customer.email}">john@example.com</td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+</body>
+</html>
