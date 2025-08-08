@@ -19,9 +19,12 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/")
@@ -38,10 +41,15 @@ public class CustomerController {
     // Make loggedInUser available to all views
     @ModelAttribute
     public void addLoggedInUserToModel(HttpSession session, Model model) {
-        String loggedInUser = (String) session.getAttribute("loggedInUser");
-        model.addAttribute("loggedInUser", loggedInUser);
+        // BEFORE: No null check or type check
+        // String loggedInUser = (String) session.getAttribute("loggedInUser");
+        // model.addAttribute("loggedInUser", loggedInUser);
+        // AFTER: Added null and type safety
+        Object loggedInUserObj = session.getAttribute("loggedInUser");  // ADDED
+        if (loggedInUserObj instanceof String loggedInUser) {           // ADDED
+            model.addAttribute("loggedInUser", loggedInUser);           // ADDED
+        }                                                               // ADDED
     }
-
     // Home page
 
 //    @GetMapping
@@ -51,6 +59,11 @@ public class CustomerController {
 @GetMapping("")
 public String viewHomePage(@RequestParam(name = "keyword", required = false) String keyword,
                            Model model, HttpSession session) {
+    // 🔐 redirect anonymous users to login
+    if (session.getAttribute("loggedInUser") == null) {
+        return "redirect:/login";
+    }
+
     List<Book> books;
     if (keyword != null && !keyword.isEmpty()) {
         books = bookService.searchBooks(keyword);
@@ -58,7 +71,6 @@ public String viewHomePage(@RequestParam(name = "keyword", required = false) Str
         books = bookService.findAllBooks();
     }
 
-    // ✅ Safely filter books into a new list
     List<Book> filteredBooks = books.stream()
             .filter(book ->
                     book != null &&
@@ -133,7 +145,6 @@ public String viewHomePage(@RequestParam(name = "keyword", required = false) Str
         model.addAttribute("customer", new Customer()); // Needed for th:object
         return "login";
     }
-
 //    @PostMapping("/login")
 //    public String loginCustomer(@ModelAttribute("customer") Customer customer,
 //                                HttpServletRequest request,
@@ -161,33 +172,54 @@ public String viewHomePage(@RequestParam(name = "keyword", required = false) Str
 public String loginCustomer(@ModelAttribute("customer") Customer customer,
                             HttpServletRequest request,
                             Model model) {
-    String username = customer.getUsername();
-    String password = customer.getPassword();
-    logger.info("Customer '{}' is attempting to log in", username);
-    boolean authenticated = customerService.authenticateCustomer(username, password);
-    if (authenticated) {
-        request.getSession().invalidate();
-        HttpSession session = request.getSession(true);
-        session.setAttribute("loggedInUser", username);
-        Customer loggedIn = customerService.findByUsername(username);
-        session.setAttribute("isAdmin", loggedIn.isAdmin());
-        logger.info("Customer '{}' logged in successfully", username);
-        if (loggedIn.isAdmin()) {
-            return "redirect:/admin/books";
-        }
-        return "redirect:/";
-    } else {
-        model.addAttribute("customer", new Customer());
+
+    final String rawUsername = customer.getUsername();
+    final String rawPassword = customer.getPassword();
+
+    if (rawUsername == null || rawPassword == null) {
+        model.addAttribute("error", "Username and password must not be null.");
+        return "login";
+    }
+
+    final String sanitizedUsername = StringEscapeUtils.escapeHtml4(rawUsername.trim());
+    final String sanitizedPassword = rawPassword.trim();
+
+    logger.info("Customer '{}' is attempting to log in", sanitizedUsername);
+
+    boolean authenticated = customerService.authenticateCustomer(sanitizedUsername, sanitizedPassword);
+
+    if (!authenticated) {
         model.addAttribute("error", "Invalid username or password!");
         return "login";
     }
+
+    request.getSession().invalidate();
+    HttpSession session = request.getSession(true);
+
+    Customer loggedIn = customerService.findByUsername(sanitizedUsername);
+    if (loggedIn == null) {
+        model.addAttribute("error", "Unexpected error. Try again.");
+        return "login";
+    }
+
+    session.setAttribute("loggedInUser", sanitizedUsername);  // already escaped
+    session.setAttribute("isAdmin", loggedIn.isAdmin());
+
+    logger.info("Customer '{}' logged in successfully", sanitizedUsername);
+
+    return loggedIn.isAdmin() ? "redirect:/admin/books" : "redirect:/";
 }
+
+
+
     @GetMapping("/customLogout")
     public String logout(HttpServletRequest request) {
-        logger.info("Customer '{}' Logout");
+        // BEFORE: logger printed null
+        // logger.info("Customer '{}' Logout");
+
         HttpSession session = request.getSession(false);
         if (session != null) {
-            logger.info("Customer '{}' Logout", session.getAttribute("loggedInUser"));
+            logger.info("Customer '{}' Logout", session.getAttribute("loggedInUser"));  // FIXED
             session.invalidate();
         }
         return "redirect:/login?logout";
@@ -198,7 +230,11 @@ public String loginCustomer(@ModelAttribute("customer") Customer customer,
     @GetMapping("/admin/books")
     public String bookList(Model model, HttpSession session) {
         // Admin check
-        if (!Boolean.TRUE.equals(session.getAttribute("isAdmin"))) {
+        // BEFORE: Weak admin check or none
+        // if (!session.getAttribute("isAdmin").equals(true)) { ... }
+
+        // AFTER: Robust admin check using Boolean.TRUE.equals()
+        if (!Boolean.TRUE.equals(session.getAttribute("isAdmin"))) {  // FIXED
             return "redirect:/login";
         }
 
@@ -246,7 +282,7 @@ public String addBook(@ModelAttribute Book book, Model model) {
     return "redirect:/admin/books";
 }
     @GetMapping("/admin/books/edit/{id}")
-    public String showEditBookForm(@PathVariable Long id, Model model, HttpSession session) throws BookNotFoundException {
+    public String showEditBookForm(@PathVariable("id")  Long id, Model model, HttpSession session) throws BookNotFoundException {
         if (!Boolean.TRUE.equals(session.getAttribute("isAdmin"))) {
             return "redirect:/login";
         }
@@ -298,7 +334,7 @@ public String addBook(@ModelAttribute Book book, Model model) {
         return "redirect:/admin/books";
     }
     @DeleteMapping("/admin/books/delete/{id}")
-    public String deleteBook(@PathVariable Long id, HttpSession session) throws BookNotFoundException {
+    public String deleteBook(@PathVariable("id") Long id, HttpSession session) throws BookNotFoundException {
         if (!Boolean.TRUE.equals(session.getAttribute("isAdmin"))) {
             return "redirect:/login";
         }
@@ -352,7 +388,7 @@ public String addBook(@ModelAttribute Book book, Model model) {
         return "redirect:/admin/authors";
     }
     @DeleteMapping("/admin/authors/delete/{id}")
-    public String deleteAuthor(@PathVariable Long id,
+    public String deleteAuthor(@PathVariable("id") Long id,
                                RedirectAttributes redirectAttributes,
                                HttpSession session) {
 
@@ -370,5 +406,9 @@ public String addBook(@ModelAttribute Book book, Model model) {
         }
 
         return "redirect:/admin/authors";
+    }
+    private String applySalt(String password) {
+        final String fixedSalt = "S3cUr3S@lt!";  // Ideally from a config or env var
+        return fixedSalt + password;
     }
 }

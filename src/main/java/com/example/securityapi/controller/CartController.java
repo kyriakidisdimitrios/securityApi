@@ -89,7 +89,8 @@ public class CartController {
 
     @PostMapping("/add") //@PostMapping("/add") becomes /cart/add
     public String addToCart(@RequestParam("bookId") Long bookId,
-                            @RequestParam(defaultValue = "1") int quantity,
+                            //@RequestParam(defaultValue = "1") int quantity,
+                            @RequestParam(name = "quantity", defaultValue = "1") int quantity,
                             HttpSession session,
                             RedirectAttributes redirectAttributes) { // Add RedirectAttributes for user feedback
         String username = (String) session.getAttribute("loggedInUser");
