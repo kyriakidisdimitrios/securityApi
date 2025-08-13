@@ -1,17 +1,37 @@
 package com.example.securityapi.config;
 
+import com.example.securityapi.security.CaptchaValidationFilter;
+import com.example.securityapi.security.LockoutFilter;
+import com.example.securityapi.security.LoginFailureHandler;
+import com.example.securityapi.security.LoginSuccessHandler;
+import com.example.securityapi.security.LoginAttemptService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.PortMapperImpl;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
+import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
+    @Bean
+    public Clock clock() {
+        return Clock.systemUTC();
+    }
 
     @Value("${server.http.port:8080}")
     private String httpPort;
@@ -20,22 +40,93 @@ public class SecurityConfig {
     private String httpsPort;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Map HTTP→HTTPS so Spring Security knows how to build the redirect
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
+        return cfg.getAuthenticationManager();
+    }
+
+    // Keep LockoutFilter as an explicit bean (it has a simple constructor)
+    @Bean
+    public LockoutFilter lockoutFilter(LoginAttemptService loginAttemptService) {
+        return new LockoutFilter(loginAttemptService);
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           // CaptchaValidationFilter is discovered via @Component and injected here
+                                           CaptchaValidationFilter captchaFilter,
+                                           LockoutFilter lockoutFilter,
+                                           LoginSuccessHandler successHandler,
+                                           LoginFailureHandler failureHandler) throws Exception {
+
         PortMapperImpl portMapper = new PortMapperImpl();
         Map<String, String> mappings = new HashMap<>();
-        mappings.put(httpPort, httpsPort);     // e.g., 8080 -> 9443
+        mappings.put(httpPort, httpsPort);
         portMapper.setPortMappings(mappings);
 
         http
-                .csrf(csrf -> csrf.disable())
-                // 🔒 Force HTTPS for every request (this is what triggers the redirect)
                 .requiresChannel(ch -> ch.anyRequest().requiresSecure())
                 .portMapper(pm -> pm.portMapper(portMapper))
+
+                .headers(headers -> headers
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .maxAgeInSeconds(31536000)
+                                .includeSubDomains(false)
+                                .preload(false))
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'"))
+                        .referrerPolicy(rp -> rp.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
+                        .frameOptions(fo -> fo.sameOrigin())
+                        .contentTypeOptions(cto -> {})
+                )
+
+                .sessionManagement(sess -> sess
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionFixation(sf -> sf.migrateSession())
+                        .invalidSessionUrl("/invalidSession")
+                        .maximumSessions(1)
+                        .expiredUrl("/sessionExpired")
+                )
+
+                .csrf(csrf -> {})
+
+                .exceptionHandling(ex -> ex.accessDeniedPage("/access-denied"))
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register", "/customLogout", "/css/**", "/js/**", "/webjars/**").permitAll()
-                        .anyRequest().permitAll()
+                        .requestMatchers(
+                                "/login", "/register", "/captcha-image",
+                                "/invalidSession", "/sessionExpired", "/access-denied",
+                                "/css/**", "/js/**", "/webjars/**", "/images/**", "/fonts/**",
+                                "/error", "/favicon.ico"
+                        ).permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
+                )
+
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .successHandler(successHandler)
+                        .failureHandler(failureHandler)
+                        .permitAll()
+                )
+
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll()
                 );
+
+        // Filters: Lockout -> Captcha -> UsernamePasswordAuthenticationFilter
+        http.addFilterBefore(lockoutFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(captchaFilter, LockoutFilter.class);
 
         return http.build();
     }

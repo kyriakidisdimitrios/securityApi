@@ -17,6 +17,9 @@
 
     <!-- ✅ Add Author Form -->
     <form th:action="@{/admin/authors/add}" method="post" th:object="${newAuthor}">
+        <!-- new august 13 -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
         <div class="row mb-3">
             <div class="col">
                 <input type="text" class="form-control" th:field="*{firstName}" placeholder="First Name" required>

@@ -13,6 +13,9 @@
   <h2 class="text-center mb-4">✏️ Edit Book</h2>
 
   <form th:action="@{/admin/books/update}" method="post" th:object="${book}">
+    <!-- new august 13 -->
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
     <input type="hidden" name="_method" value="put"/>
     <input type="hidden" th:field="*{id}"/>
 

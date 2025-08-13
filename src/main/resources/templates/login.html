@@ -17,6 +17,9 @@
         <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 
         <form th:action="@{/login}" method="post" th:object="${customer}">
+            <!-- new august 13 -->
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
                 <input id="username" type="text" th:field="*{username}" class="form-control"
@@ -29,6 +32,16 @@
                        placeholder="Enter password" required />
             </div>
 
+            <!-- CAPTCHA section -->
+            <div class="mb-3">
+                <label class="form-label">CAPTCHA</label>
+                <div class="d-flex align-items-center">
+                    <img id="captchaImage" th:src="@{/captcha-image}" alt="Captcha" class="me-2" style="height: 50px; border:1px solid #ccc;" />
+                    <button type="button" id="refreshCaptcha" class="btn btn-outline-secondary btn-sm">Refresh</button>
+                </div>
+                <input type="text" name="captcha" class="form-control mt-2" placeholder="Enter CAPTCHA" required />
+            </div>
+
             <div class="d-grid mb-3">
                 <button type="submit" class="btn btn-primary">Log In</button>
             </div>
@@ -39,6 +52,9 @@
         </div>
     </div>
 </section>
+
+<!-- External JS for captcha -->
+<script th:src="@{/js/captcha.js}"></script>
 
 </body>
 </html>

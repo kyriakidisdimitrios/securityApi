@@ -1,4 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- CSRF helpers (read from <meta> in layout.html) ---
+    const CSRF_TOKEN_META  = document.querySelector('meta[name="_csrf"]');
+    const CSRF_HEADER_META = document.querySelector('meta[name="_csrf_header"]');
+
+    function buildJsonHeaders() {
+        const headers = { 'Content-Type': 'application/json' };
+        const token  = CSRF_TOKEN_META?.getAttribute('content');
+        const header = CSRF_HEADER_META?.getAttribute('content');
+        if (token && header) {
+            headers[header] = token;
+        }
+        return headers;
+    }
+
     // Quantity update via AJAX
     document.querySelectorAll('.cart-qty-input').forEach(input => {
         input.addEventListener('change', function () {
@@ -7,9 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             fetch('/cart/update-ajax', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: buildJsonHeaders(),
                 body: JSON.stringify({ cartItemId, quantity })
             })
                 .then(res => res.json())
@@ -36,9 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             fetch('/cart/remove-ajax', {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: buildJsonHeaders(),
                 body: JSON.stringify({ cartItemId })
             })
                 .then(res => res.json())

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invalid Session</title>
+</head>
+<body>
+<section layout:fragment="content" class="text-center mt-5">
+    <h1 class="display-6 text-danger">Invalid Session</h1>
+    <p class="lead">Your session is invalid or has been cleared. Please log in again.</p>
+    <a th:href="@{/login}" class="btn btn-primary mt-3">Go to Login</a>
+</section>
+</body>
+</html>
