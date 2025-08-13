@@ -36,7 +36,7 @@ public class Customer {
     private String username;
 
     @NotBlank(message = "Name is required")
-    // NEW: capitalized word 3–33 letters. If you need Greek/Unicode, tell me and I’ll switch regex.
+    // NEW: capitalized word 3–33 letters. If you need Greek/Unicode, tell me, and I’ll switch regex.
     @Pattern(regexp = "^[A-Z][a-z]{2,32}$",
             message = "Name must start with uppercase and be 3–33 letters")
     private String name;

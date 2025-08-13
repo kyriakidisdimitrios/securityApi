@@ -22,10 +22,14 @@
 
         <div class="row mb-3">
             <div class="col">
-                <input type="text" class="form-control" th:field="*{firstName}" placeholder="First Name" required>
+                <label>
+                    <input type="text" class="form-control" th:field="*{firstName}" placeholder="First Name" required>
+                </label>
             </div>
             <div class="col">
-                <input type="text" class="form-control" th:field="*{lastName}" placeholder="Last Name" required>
+                <label>
+                    <input type="text" class="form-control" th:field="*{lastName}" placeholder="Last Name" required>
+                </label>
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-success">➕ Add Author</button>

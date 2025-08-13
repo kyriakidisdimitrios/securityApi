@@ -46,7 +46,7 @@ public class CartItemService {
         cartItemRepository.save(cartItem);
     }
 
-    // 🔐 NEW: delete only if the item belongs to this customer
+    // 🔐 NEW: delete it only if the item belongs to this customer
     @Transactional
     public void removeCartItemOwned(Long cartItemId, Customer customer) {
         var exists = cartItemRepository.findByIdAndCustomer_Id(cartItemId, customer.getId()).isPresent();
@@ -112,9 +112,6 @@ public class CartItemService {
             cartItemRepository.save(newItem);
         }
     }
-//    public void removeCartItemById(Long cartItemId) {
-//        cartItemRepository.deleteById(cartItemId);
-//    }
     public void removeCartItemById(Long cartItemId) throws CartItemException {
         if (!cartItemRepository.existsById(cartItemId)) {
             throw new CartItemException("Cannot remove item. Cart item with ID " + cartItemId + " not found.");
@@ -129,24 +126,6 @@ public class CartItemService {
         List<CartItem> items = cartItemRepository.findByCustomer(customer);
         cartItemRepository.deleteAll(items);
     }
-//    public void updateQuantity(Long cartItemId, int quantity) {
-//        CartItem cartItem = cartItemRepository.findById(cartItemId)
-//                .orElseThrow(() -> new IllegalArgumentException("Cart item not found."));
-//
-//        Book book = cartItem.getBook();
-//        int availableCopies = book.getCopies();
-//
-//        if (quantity < 1) {
-//            throw new IllegalArgumentException("Quantity must be at least 1.");
-//        }
-//
-//        if (quantity > availableCopies) {
-//            throw new IllegalArgumentException("Requested quantity exceeds available copies.");
-//        }
-//
-//        cartItem.setQuantity(quantity);
-//        cartItemRepository.save(cartItem);
-//    }
     public void updateQuantity(Long cartItemId, int quantity) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new CartItemException("Cannot update quantity. Cart item with ID " + cartItemId + " not found."));

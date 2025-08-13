@@ -8,7 +8,7 @@
     <artifactId>securityapi</artifactId>
     <version>0.0.2</version>
     <name>securityApi</name>
-    <description>Secure Book Shop Application</description>
+    <description>Secure Bookshop Application</description>
 
     <!-- 🔧 Properties -->
     <properties>

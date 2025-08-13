@@ -9,6 +9,6 @@ public class RestClientConfig {
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate(); // simple; you can add timeouts if needed
+        return new RestTemplate();
     }
 }

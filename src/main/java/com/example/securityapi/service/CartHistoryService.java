@@ -40,12 +40,7 @@ public class CartHistoryService {
         return cartHistoryRepository.findByCustomerOrderByTimestampDesc(customer);
     }
 
-//    public void save(ChartHistory history) {
-//        if (history != null) {
-//            chartHistoryRepository.save(history);
-//        }
-//    }
-    public void savePurchaseHistory(Customer customer, List<CartItem> items, double totalPaid) {
+    public void savePurchaseHistory(Customer customer, List<CartItem> items, double ignoredTotalPaid) {
         if (items == null || items.isEmpty()) return;
         StringBuilder sb = new StringBuilder();
         for (CartItem item : items) {

@@ -7,39 +7,35 @@ import java.net.IDN;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
- * SSRF guard for user-supplied URLs.
+ * S.S.R.F guard for user-supplied URLs.
  *  - allow only http/https
  *  - forbid credentials in URL
  *  - allow only common web ports
  *  - resolve DNS and reject internal/loopback/link-local/private/multicast/etc.
- *
- * New helpers:
- *  - explainIfBlocked(url) -> reason string or null if allowed
- *  - isSafeUrl(url)        -> true if allowed (public)
+
+ * Helpers:
+ *  - explainIfBlocked(url) → reason string, or null if allowed
+ *  - isSafeUrl(url) → true if allowed (public)
  */
 public final class UrlValidatorUtil {
     private static final Logger log = LoggerFactory.getLogger(UrlValidatorUtil.class);
 
-    private static final Set<String> ALLOWED_SCHEMES =
-            new HashSet<>(Arrays.asList("http", "https"));
+    private static final Set<String> ALLOWED_SCHEMES = Set.of("http", "https");
 
-    // -1 = default port (http/https). Allow a couple of dev TLS ports too.
-    private static final Set<Integer> ALLOWED_PORTS =
-            new HashSet<>(Arrays.asList(-1, 80, 443, 8443, 9443));
+    // -1 = default port (http/https). Include a couple of common dev TLS ports.
+    private static final Set<Integer> ALLOWED_PORTS = Set.of(-1, 80, 443, 8443, 9443);
 
-    private static final Set<String> BLOCKED_HOSTNAMES =
-            new HashSet<>(Arrays.asList(
-                    "localhost",
-                    "localhost.localdomain",
-                    "metadata.google.internal",
-                    "metadata",
-                    "169.254.169.254" // common cloud metadata IP (also caught by IP checks)
-            ));
+    // Optional “never fetch” hostnames (defense-in-depth)
+    private static final Set<String> BLOCKED_HOSTNAMES = Set.of(
+            "localhost",
+            "localhost.localdomain",
+            "metadata.google.internal",
+            "metadata",
+            "169.254.169.254" // cloud metadata IP (also caught by IP checks)
+    );
 
     private UrlValidatorUtil() {}
 
@@ -57,14 +53,14 @@ public final class UrlValidatorUtil {
         }
 
         // Scheme
-        String scheme = safeLower(uri.getScheme());
+        final String scheme = toLower(uri.getScheme());
         if (!ALLOWED_SCHEMES.contains(scheme)) {
             return "Only http/https are allowed";
         }
 
         // Host + no userinfo
-        String rawHost = uri.getHost();
-        String rawUserInfo = uri.getRawUserInfo(); // may be null
+        final String rawHost = uri.getHost();
+        final String rawUserInfo = uri.getRawUserInfo(); // maybe null
         if (rawHost == null) {
             return "URL has no host";
         }
@@ -73,7 +69,7 @@ public final class UrlValidatorUtil {
         }
 
         // Hostname normalization (punycode) + simple blocklist
-        String host = IDN.toASCII(rawHost, IDN.ALLOW_UNASSIGNED).toLowerCase();
+        final String host = IDN.toASCII(rawHost, IDN.ALLOW_UNASSIGNED).toLowerCase();
         if (host.isBlank()) {
             return "Hostname is empty";
         }
@@ -82,18 +78,18 @@ public final class UrlValidatorUtil {
         }
 
         // Port allowlist
-        int port = uri.getPort();
+        final int port = uri.getPort();
         if (!ALLOWED_PORTS.contains(port)) {
             return "Port is not allowed";
         }
 
         // DNS resolution → must be public/routable (blocks “internal websites”)
         try {
-            InetAddress[] addrs = InetAddress.getAllByName(host);
-            if (addrs == null || addrs.length == 0) {
+            InetAddress[] inetAddress = InetAddress.getAllByName(host);
+            if (inetAddress == null || inetAddress.length == 0) {
                 return "Hostname did not resolve";
             }
-            for (InetAddress addr : addrs) {
+            for (InetAddress addr : inetAddress) {
                 if (!isPublicRoutable(addr)) {
                     return "Target resolves to internal/private address";
                 }
@@ -103,7 +99,7 @@ public final class UrlValidatorUtil {
             return "Hostname did not resolve";
         }
 
-        // Everything OK ⇒ public URL allowed
+        // Allowed
         return null;
     }
 
@@ -114,8 +110,14 @@ public final class UrlValidatorUtil {
 
     // ===== helpers =====
 
-    private static String safeLower(String s) { return s == null ? null : s.toLowerCase(); }
+    private static String toLower(String s) {
+        return s == null ? null : s.toLowerCase();
+    }
 
+    /**
+     * Reject loopback, any-local, link-local, site-local (RFC1918), multicast,
+     * IPv6 Unique Local (fc00::/7), and IPv4 C.GN.A.T 100.64.0.0/10.
+     */
     private static boolean isPublicRoutable(InetAddress ip) {
         if (ip.isAnyLocalAddress()) return false;      // 0.0.0.0 / ::
         if (ip.isLoopbackAddress()) return false;      // 127.0.0.0/8, ::1
@@ -123,27 +125,61 @@ public final class UrlValidatorUtil {
         if (ip.isSiteLocalAddress()) return false;     // 10/8, 172.16/12, 192.168/16
         if (ip.isMulticastAddress()) return false;     // 224.0.0.0/4, ff00::/8
 
-        // IPv6 unique local fc00::/7
+        // IPv6 ULA fc00::/7 (compare as int to avoid sign issues)
         if (ip instanceof Inet6Address ipv6) {
             byte[] b = ipv6.getAddress();
-            int top = b[0] & 0xFE; // mask lowest bit
-            if (top == (byte) 0xFC) return false; // fc00::/7
+            int firstByte = b[0] & 0xFF;
+            int masked = firstByte & 0xFE; // top 7 bits
+            if (masked == 0xFC) return false; // fc00::/7
         }
 
-        // RFC 6598 CGNAT 100.64.0.0/10
-        if (isIpv4InRange(ip, 100, 64, 0, 0, 100, 127, 255, 255)) return false;
-
-        return true;
+        // IPv4 C.G.NA.T 100.64.0.0/10
+        return !ipv4InCidr(ip);
     }
 
-    private static boolean isIpv4InRange(InetAddress addr,
-                                         int aMin, int bMin, int cMin, int dMin,
-                                         int aMax, int bMax, int cMax, int dMax) {
-        byte[] b = addr.getAddress();
+    /** Returns true if the given InetAddress (IPv4) is inside the CIDR. */
+    private static boolean ipv4InCidr(InetAddress addr) {
+        final byte[] b = addr.getAddress();
         if (b.length != 4) return false;
-        int ip = ((b[0] & 0xFF) << 24) | ((b[1] & 0xFF) << 16) | ((b[2] & 0xFF) << 8) | (b[3] & 0xFF);
-        int min = ((aMin & 0xFF) << 24) | ((bMin & 0xFF) << 16) | ((cMin & 0xFF) << 8) | (dMin & 0xFF);
-        int max = ((aMax & 0xFF) << 24) | ((bMax & 0xFF) << 16) | ((cMax & 0xFF) << 8) | (dMax & 0xFF);
-        return ip >= min && ip <= max;
+
+        final String[] parts = "100.64.0.0/10".split("/");
+        if (parts.length != 2) return false;
+
+        final String[] oct = parts[0].split("\\.");
+        if (oct.length != 4) return false;
+
+        final int prefix;
+        try {
+            prefix = Integer.parseInt(parts[1]);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        if (prefix < 0 || prefix > 32) return false;
+
+        final int ip =
+                (Byte.toUnsignedInt(b[0]) << 24)
+                        | (Byte.toUnsignedInt(b[1]) << 16)
+                        | (Byte.toUnsignedInt(b[2]) << 8)
+                        |  Byte.toUnsignedInt(b[3]);
+
+        final int base =
+                (parseOctet(oct[0]) << 24)
+                        | (parseOctet(oct[1]) << 16)
+                        | (parseOctet(oct[2]) << 8)
+                        |  parseOctet(oct[3]);
+
+        // Build mask using 64-bit to avoid shift-edge warnings
+        final int mask = (prefix == 0) ? 0 : (int) (0xFFFFFFFFL << (32 - prefix));
+        return (ip & mask) == (base & mask);
+    }
+
+
+    private static int parseOctet(String s) {
+        try {
+            final int v = Integer.parseInt(s);
+            return (v < 0 || v > 255) ? 0 : v;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 }

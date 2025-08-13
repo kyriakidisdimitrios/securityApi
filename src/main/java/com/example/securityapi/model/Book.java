@@ -31,6 +31,8 @@ public class Book {
     @Min(value = 0, message = "Copies must be 0 or more")
     private int copies;
 
+    //    public Book() {}
+    //
     @ManyToMany
     @JoinTable(
             name = "book_authors",
@@ -38,14 +40,4 @@ public class Book {
             inverseJoinColumns = @JoinColumn(name = "author_id")
     )
     private Set<Author> authors = new HashSet<>();
-
-    //    public Book() {}
-//
-    public Set<Author> getAuthors() {
-        return authors;
-    }
-
-    public void setAuthors(Set<Author> authors) {
-        this.authors = authors;
-    }
 }

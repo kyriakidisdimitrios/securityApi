@@ -14,7 +14,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     CartItem findByCustomerAndBook(Customer customer, Book book);
     List<CartItem> findByBookId(Long bookId);
 
-    // 🔐 NEW: IDOR-safe accessors - CWE-639
+    // 🔐 NEW: I.D.O.R-safe accessors - CWE-639
     Optional<CartItem> findByIdAndCustomer_Id(Long id, Long customerId);
     void deleteByIdAndCustomer_Id(Long id, Long customerId);
 }

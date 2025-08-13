@@ -90,7 +90,7 @@ function openPopup() {
     // Open the checkout popup window
     window.open('/cart/checkout-popup', 'checkoutPopup', 'width=600,height=400');
 
-    // Redirect main window (not the popup) to /index after a brief delay
+    // Redirect the main window (not the popup) to /index after a brief delay
     setTimeout(() => {
         window.location.href = '/';
     }, 500); // Allow enough time for popup to initiate

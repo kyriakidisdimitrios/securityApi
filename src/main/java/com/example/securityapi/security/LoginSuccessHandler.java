@@ -2,7 +2,6 @@ package com.example.securityapi.security;
 
 import com.example.securityapi.model.Customer;
 import com.example.securityapi.service.CustomerService;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -28,7 +27,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
+                                        Authentication authentication) throws IOException {
         // New session (session fixation protection is enabled in SecurityConfig)
         HttpSession session = request.getSession();
 

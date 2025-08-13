@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-@Converter(autoApply = false)
+@Converter()
 public class CryptoStringConverter implements AttributeConverter<String, String> {
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     private static final int GCM_TAG_BITS = 128;
@@ -27,11 +27,11 @@ public class CryptoStringConverter implements AttributeConverter<String, String>
             return new SecretKeySpec(key, "AES");
         } catch (Exception e) { return null; }
     }
-    private static boolean enabled() { return KEY != null; }
+    private static boolean enabledMethod() { return KEY == null; }
 
     @Override
     public String convertToDatabaseColumn(String attribute) {
-        if (attribute == null || !enabled()) return attribute;
+        if (attribute == null || enabledMethod()) return attribute;
         try {
             byte[] iv = new byte[IV_LEN]; RNG.nextBytes(iv);
             Cipher c = Cipher.getInstance(TRANSFORMATION);
@@ -45,7 +45,7 @@ public class CryptoStringConverter implements AttributeConverter<String, String>
     }
     @Override
     public String convertToEntityAttribute(String dbData) {
-        if (dbData == null || !enabled()) return dbData;
+        if (dbData == null || enabledMethod()) return dbData;
         try {
             byte[] all = Base64.getDecoder().decode(dbData);
             if (all.length <= IV_LEN) return dbData;

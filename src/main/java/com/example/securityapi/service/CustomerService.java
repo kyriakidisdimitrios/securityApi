@@ -60,8 +60,7 @@ public class CustomerService {
             logger.warn("Login failed: user not found {}", s(username));
             return false;
         }
-        boolean match = passwordEncoder.matches(rawPassword, customer.getPassword());
-        return match;
+        return passwordEncoder.matches(rawPassword, customer.getPassword());
     }
 
     public Customer findByEmail(String email) {

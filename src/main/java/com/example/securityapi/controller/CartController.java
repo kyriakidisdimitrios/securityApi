@@ -16,7 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.util.UriUtils;
+
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.example.securityapi.utilities.UrlValidatorUtil.explainIfBlocked;
-import static com.example.securityapi.utilities.UrlValidatorUtil.isSafeUrl;
-
 @Controller
 @RequestMapping("/cart") // Maps all methods starting with /cart
 public class CartController {
@@ -77,7 +75,7 @@ public class CartController {
 
         try {
             // ✅ safe parsing with defaults
-            Long cartItemId = Long.valueOf(payload.getOrDefault("cartItemId", "-1"));
+            long cartItemId = Long.parseLong(payload.getOrDefault("cartItemId", "-1"));
             int quantity = Integer.parseInt(payload.getOrDefault("quantity", "0"));
 
             if (cartItemId < 0) {
@@ -144,7 +142,7 @@ public class CartController {
 
         try {
             // ✅ safe parsing with default
-            Long cartItemId = Long.valueOf(payload.getOrDefault("cartItemId", "-1"));
+            long cartItemId = Long.parseLong(payload.getOrDefault("cartItemId", "-1"));
             if (cartItemId < 0) {
                 response.put("success", false);
                 response.put("message", "Invalid cart item ID");
@@ -239,7 +237,7 @@ public class CartController {
         return "redirect:/cart";
     }
 
-    // GET /cart/import-by-url  (quick demo via address bar)
+    // GET /cart/import-by-url (quick demo via address bar)
     @GetMapping("/import-by-url")
     public String importFromUrl(@RequestParam("sourceUrl") String sourceUrl, Model model) {
         // 1️⃣ Check allowed protocols first

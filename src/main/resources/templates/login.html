@@ -13,7 +13,7 @@
     <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px;">
         <h4 class="mb-4 text-center">Login to My Store</h4>
 
-        <!-- Show only error passed from controller -->
+        <!-- Show only error passed from the controller -->
         <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 
         <form th:action="@{/login}" method="post" th:object="${customer}">
@@ -39,7 +39,9 @@
                     <img id="captchaImage" th:src="@{/captcha-image}" alt="Captcha" class="me-2" style="height: 50px; border:1px solid #ccc;" />
                     <button type="button" id="refreshCaptcha" class="btn btn-outline-secondary btn-sm">Refresh</button>
                 </div>
-                <input type="text" name="captcha" class="form-control mt-2" placeholder="Enter CAPTCHA" required />
+                <label>
+                    <input type="text" name="captcha" class="form-control mt-2" placeholder="Enter CAPTCHA" required />
+                </label>
             </div>
 
             <div class="d-grid mb-3">
