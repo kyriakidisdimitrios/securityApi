@@ -99,6 +99,7 @@ public class SecurityConfig {
                                 "/login", "/register", "/captcha-image",
                                 "/invalidSession", "/sessionExpired", "/access-denied",
                                 "/css/**", "/js/**", "/webjars/**", "/images/**", "/fonts/**",
+                                "/ssrf-blocked",
                                 "/error", "/favicon.ico"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")

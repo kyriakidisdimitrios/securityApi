@@ -1,9 +1,11 @@
 package com.example.securityapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
+import com.example.securityapi.utilities.CryptoStringConverter; // ✅ PII encryption
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -53,22 +55,27 @@ public class Customer {
     @NotBlank(message = "Address is required")
     // OPTIONAL: uncomment to enforce minimum length
     // @Size(min = 5, max = 255, message = "Address must be 5–255 characters")
+    @Convert(converter = CryptoStringConverter.class) // ✅ Encrypt at rest
     private String address;
 
     @Column(nullable = false, unique = true)
     @NotBlank(message = "Phone number is required")
     @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must be 10 to 15 digits only")
+    @Convert(converter = CryptoStringConverter.class) // ✅ Encrypt at rest
     private String phoneNumber;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     @Column(nullable = false, unique = true)
+    @Convert(converter = CryptoStringConverter.class) // ✅ Encrypt at rest
     private String email;
 
     @NotBlank(message = "Password is required")
     // NEW: strong password (8–32, upper/lower/digit/special from @#$%!)
     @Pattern(regexp = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%!]).{8,32}",
             message = "Password must be 8–32 chars and include upper, lower, number, and special (@#$%!)")
+    @JsonIgnore               // Prevent exposure in JSON/API responses
+    @ToString.Exclude         // Prevent accidental logging
     private String password;
 
     @Column(nullable = false)

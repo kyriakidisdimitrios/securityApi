@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import static com.example.securityapi.utilities.LogSanitizer.s;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -21,14 +22,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class) // No need to trigger
     public String handleValidationError(MethodArgumentNotValidException ex, RedirectAttributes redirectAttributes) {
-        logger.warn("Validation error: {}", ex.getMessage());
+        logger.warn("Validation error: {}", s(ex.getMessage()));
         redirectAttributes.addFlashAttribute("errorMessage", "Invalid input: " + ex.getMessage());
         return "redirect:/admin/books";
     }
 
     @ExceptionHandler(BindException.class)
     public String handleBindException(BindException ex, RedirectAttributes redirectAttributes) {
-        logger.warn("Binding error: {}", ex.getMessage());
+        logger.warn("Binding error: {}", s(ex.getMessage()));
         redirectAttributes.addFlashAttribute("errorMessage", "Binding failed: Invalid number format.");
         return "redirect:/admin/books";
     }

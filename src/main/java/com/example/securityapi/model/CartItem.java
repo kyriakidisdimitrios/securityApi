@@ -2,6 +2,8 @@
 package com.example.securityapi.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 @Entity
@@ -28,5 +30,5 @@ public class CartItem {
     private Book book;
 
     @Column(nullable = false)
-    private int quantity;
+    @Min(1) @Max(9999) int quantity;
 }

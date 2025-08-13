@@ -7,20 +7,24 @@ import com.example.securityapi.model.CartItem;
 import com.example.securityapi.model.Customer;
 import com.example.securityapi.service.BookService;
 import com.example.securityapi.service.CartItemService;
-import com.example.securityapi.service.ChartHistoryService;
+import com.example.securityapi.service.CartHistoryService;
 import com.example.securityapi.service.CustomerService;
 import com.example.securityapi.utilities.CardValidator;
-import jakarta.persistence.Converts;
+import com.example.securityapi.utilities.UrlValidatorUtil;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+
+import static com.example.securityapi.utilities.UrlValidatorUtil.explainIfBlocked;
+import static com.example.securityapi.utilities.UrlValidatorUtil.isSafeUrl;
 
 @Controller
 @RequestMapping("/cart") // Maps all methods starting with /cart
@@ -29,16 +33,16 @@ public class CartController {
     private final CartItemService cartItemService;
     private final CustomerService customerService;
     private final BookService bookService;
-    private final ChartHistoryService chartHistoryService;
+    private final CartHistoryService cartHistoryService;
 
     public CartController(CartItemService cartItemService,
                           CustomerService customerService,
                           BookService bookService,
-                          ChartHistoryService chartHistoryService) {
+                          CartHistoryService cartHistoryService) {
         this.cartItemService = cartItemService;
         this.customerService = customerService;
         this.bookService = bookService;
-        this.chartHistoryService = chartHistoryService;
+        this.cartHistoryService = cartHistoryService;
     }
 
     @GetMapping // becomes /cart
@@ -89,7 +93,7 @@ public class CartController {
 
             Customer customer = customerService.findByUsername(username);
 
-            // 🔐 IDOR-safe service call (scoped to owner)
+            // 🔐 I.D.O.R-safe service call (scoped to "owner")
             cartItemService.updateQuantityOwned(cartItemId, quantity, customer);
 
             response.put("success", true);
@@ -125,6 +129,7 @@ public class CartController {
         }
         return "redirect:/cart";
     }
+
     @DeleteMapping("/remove-ajax")
     @ResponseBody
     public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> payload, HttpSession session) {
@@ -148,7 +153,7 @@ public class CartController {
 
             Customer customer = customerService.findByUsername(username);
 
-            // 🔐 IDOR-safe service call (scoped to owner)
+            // 🔐 I.DO.R-safe service call (scoped to "owner")
             cartItemService.removeCartItemOwned(cartItemId, customer);
 
             response.put("success", true);
@@ -187,7 +192,7 @@ public class CartController {
 
         double totalPaid = 0;
         for (CartItem item : cartItems) {
-            // 🔐 IDOR-safe quantity update during checkout too
+            // 🔐 I.D.O.R-safe quantity update during checkout too
             cartItemService.updateQuantityOwned(item.getId(), item.getQuantity(), customer);
 
             Book book = item.getBook();
@@ -198,7 +203,7 @@ public class CartController {
             bookService.saveBook(book); // save in both cases
         }
 
-        chartHistoryService.savePurchaseHistory(customer, cartItems, totalPaid);
+        cartHistoryService.savePurchaseHistory(customer, cartItems, totalPaid);
 
         cartItemService.clearCart(customer);
         session.setAttribute("checkoutTotal", totalPaid);
@@ -219,5 +224,40 @@ public class CartController {
         Double total = (Double) session.getAttribute("checkoutTotal");
         model.addAttribute("totalPaid", total != null ? total : 0);
         return "checkout";  // returns checkout.html from templates/
+    }
+    // ✅ POST: /cart/import-by-url
+    @PostMapping("/import-by-url")
+    public String importFromUrlPost(@RequestParam("sourceUrl") String sourceUrl, Model model) {
+        String reason = explainIfBlocked(sourceUrl);
+        if (reason != null) {
+            model.addAttribute("blockedUrl", sourceUrl);
+            model.addAttribute("reason", reason);
+            return "ssrf_blocked";          // ← render the Thymeleaf page directly
+        }
+
+        // cartImportService.fetchAndImport(sourceUrl);
+        return "redirect:/cart";
+    }
+
+    // GET /cart/import-by-url  (quick demo via address bar)
+    @GetMapping("/import-by-url")
+    public String importFromUrl(@RequestParam("sourceUrl") String sourceUrl, Model model) {
+        // 1️⃣ Check allowed protocols first
+        if (!sourceUrl.startsWith("https://") && !sourceUrl.startsWith("http://")) {
+            model.addAttribute("reason", "Only HTTP/HTTPS is allowed");
+            model.addAttribute("blockedUrl", sourceUrl);
+            return "ssrf_blocked";
+        }
+
+        // 2️⃣ Check for internal/unsafe URLs
+        String reason = UrlValidatorUtil.explainIfBlocked(sourceUrl);
+        if (reason != null) {
+            model.addAttribute("blockedUrl", sourceUrl);
+            model.addAttribute("reason", reason);
+            return "ssrf_blocked";
+        }
+
+        // 3️⃣ Safe → redirect directly to the URL
+        return "redirect:" + sourceUrl;
     }
 }

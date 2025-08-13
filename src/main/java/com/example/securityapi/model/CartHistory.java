@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor // Recommended Lombok annotations
 //@Data
 @AllArgsConstructor
-public class ChartHistory {
+public class CartHistory {
     @Id
     @GeneratedValue
     private Long id;

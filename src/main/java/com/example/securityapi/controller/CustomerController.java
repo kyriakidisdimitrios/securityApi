@@ -6,7 +6,6 @@ import com.example.securityapi.model.Book;
 import com.example.securityapi.model.Customer;
 import com.example.securityapi.service.AuthorService;
 import com.example.securityapi.service.BookService;
-import com.example.securityapi.service.ChartHistoryService; // kept as in your file
 import com.example.securityapi.service.CustomerService;
 import com.example.securityapi.utilities.CaptchaService;
 import javax.imageio.ImageIO;
@@ -14,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import org.apache.commons.text.StringEscapeUtils; // kept (even if not referenced) to preserve original imports
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -23,6 +21,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.security.access.prepost.PreAuthorize; // method-level security (new Aug 13)
+import static com.example.securityapi.utilities.LogSanitizer.s;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -103,7 +102,6 @@ public class CustomerController {
         return "register";
     }
 
-    // Process registration
     @PostMapping("/register")
     public String registerCustomer(@Valid @ModelAttribute("customer") Customer customer,
                                    BindingResult result,
@@ -123,7 +121,7 @@ public class CustomerController {
             return "register";
         }
 
-        // 3️⃣ Domain validation (kept exactly as yours)
+        // 3️⃣ Domain validation
         if (customer.getDateOfBirth().isBefore(LocalDate.of(1900, 1, 1)) ||
                 customer.getDateOfBirth().isAfter(LocalDate.of(2010, 12, 31))) {
             result.rejectValue("dateOfBirth", "error.customer", "Date of birth must be between 1900 and 2010");
@@ -143,9 +141,12 @@ public class CustomerController {
             return "register";
         }
 
+        // 4️⃣ Save customer (hashing handled in service)
         customerService.saveCustomer(customer);
+
         return "redirect:/login";
     }
+
 
     // Show login form ✅ generate CAPTCHA
     @GetMapping("/login")
@@ -198,7 +199,8 @@ public class CustomerController {
     public String logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
-            logger.info("Customer '{}' Logout", session.getAttribute("loggedInUser"));
+            Object u = session.getAttribute("loggedInUser");
+            logger.info("Customer '{}' Logout", s(u));
             session.invalidate();
         }
         return "redirect:/login?logout";

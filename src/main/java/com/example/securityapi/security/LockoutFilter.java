@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;   // ⬅️ add
 import org.springframework.web.filter.OncePerRequestFilter;
+import static com.example.securityapi.utilities.LogSanitizer.s;
 
 import java.io.IOException;
 
@@ -26,11 +27,11 @@ public class LockoutFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain chain) throws ServletException, IOException {
 
         if (isLoginPost(request)) {
-            String username = request.getParameter("username"); // may be null
+            String username = request.getParameter("username"); // maybe null
             if (attemptService.isLocked(username)) {
                 long mins = attemptService.minutesLeft(username);
                 if (log.isDebugEnabled()) {
-                    log.debug("Blocking login for '{}' — {} min left", username, mins);
+                    log.debug("Blocking login for '{}' — {} min left", s(username), mins);
                 }
                 response.sendRedirect("/login?locked" + (mins > 0 ? "&mins=" + mins : ""));
                 return;

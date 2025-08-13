@@ -1,42 +1,43 @@
 package com.example.securityapi.service;
 
 import com.example.securityapi.model.Book;
+import com.example.securityapi.model.CartHistory;
 import com.example.securityapi.model.CartItem;
-import com.example.securityapi.model.ChartHistory;
 import com.example.securityapi.model.Customer; // Make sure this is imported
-import com.example.securityapi.repository.ChartHistoryRepository;
+import com.example.securityapi.repository.CartHistoryRepository;
 import org.springframework.stereotype.Service;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
 @Service
-public class ChartHistoryService {
+public class CartHistoryService {
 
-    private final ChartHistoryRepository chartHistoryRepository;
-    public ChartHistoryService(ChartHistoryRepository chartHistoryRepository) {
-        this.chartHistoryRepository = chartHistoryRepository;
+    private final CartHistoryRepository cartHistoryRepository;
+    public CartHistoryService(CartHistoryRepository cartHistoryRepository) {
+        this.cartHistoryRepository = cartHistoryRepository;
     }
 
-    public void saveChart(ChartHistory chartHistory) {
-        chartHistoryRepository.save(chartHistory);
+    public void saveChart(CartHistory chartHistory) {
+        cartHistoryRepository.save(chartHistory);
     }
 
-    public List<ChartHistory> getAllChartsOrdered() {
-        return chartHistoryRepository.findAllByOrderByTimestampDesc();
+    public List<CartHistory> getAllChartsOrdered() {
+        return cartHistoryRepository.findAllByOrderByTimestampDesc();
     }
 
-    public ChartHistory getChartById(Long id) {
-        return chartHistoryRepository.findById(id).orElse(null);
+    public CartHistory getChartById(Long id) {
+        return cartHistoryRepository.findById(id).orElse(null);
     }
 
     public void deleteChart(Long id) {
-        chartHistoryRepository.deleteById(id);
+        cartHistoryRepository.deleteById(id);
     }
 
     // --- THIS IS THE NEW METHOD THAT FIXES THE ERROR ---
-    public List<ChartHistory> getChartsForCustomer(Customer customer) {
+    public List<CartHistory> getChartsForCustomer(Customer customer) {
         // It calls the new repository method we created in Step 1
-        return chartHistoryRepository.findByCustomerOrderByTimestampDesc(customer);
+        return cartHistoryRepository.findByCustomerOrderByTimestampDesc(customer);
     }
 
 //    public void save(ChartHistory history) {
@@ -52,11 +53,11 @@ public class ChartHistoryService {
             sb.append(String.format("Book: %s, Qty: %d, Price: %.2f €%n",
                     book.getTitle(), item.getQuantity(), book.getPrice()));
         }
-        ChartHistory history = new ChartHistory();
+        CartHistory history = new CartHistory();
         history.setCustomer(customer);
         history.setTimestamp(LocalDateTime.now());
         history.setChartType("Purchase"); // or any descriptive title
         history.setChartData(sb.toString());
-        chartHistoryRepository.save(history);
+        cartHistoryRepository.save(history);
     }
 }

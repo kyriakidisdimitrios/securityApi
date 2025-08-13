@@ -3,7 +3,10 @@ package com.example.securityapi.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -36,11 +39,12 @@ public class Book {
     )
     private Set<Author> authors = new HashSet<>();
 
-//    public Book() {}
+    //    public Book() {}
 //
     public Set<Author> getAuthors() {
         return authors;
     }
+
     public void setAuthors(Set<Author> authors) {
         this.authors = authors;
     }

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import static com.example.securityapi.utilities.LogSanitizer.s;
 
 import java.io.IOException;
 
@@ -30,9 +31,10 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
 
         if (attemptService.isLocked(username)) {
             long mins = attemptService.minutesLeft(username);
-            log.warn("Account temporarily locked for user='{}' ({} min left)", username, mins);
+            log.warn("Account temporarily locked for user='{}' ({} min left)", s(username), mins);
             response.sendRedirect("/login?locked" + (mins > 0 ? ("&mins=" + mins) : ""));
         } else {
+            log.warn("Authentication failed for user='{}'", s(username));
             response.sendRedirect("/login?error");
         }
     }
