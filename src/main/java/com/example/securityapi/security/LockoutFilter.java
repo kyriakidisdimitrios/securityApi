@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.lang.NonNull;
+import org.springframework.lang.NonNull;   // ⬅️ add
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -21,23 +21,21 @@ public class LockoutFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain chain) throws ServletException, IOException {
 
         if (isLoginPost(request)) {
-            String username = request.getParameter("username");
+            String username = request.getParameter("username"); // may be null
             if (attemptService.isLocked(username)) {
                 long mins = attemptService.minutesLeft(username);
                 if (log.isDebugEnabled()) {
                     log.debug("Blocking login for '{}' — {} min left", username, mins);
                 }
-                response.sendRedirect("/login?locked&mins=" + mins);
+                response.sendRedirect("/login?locked" + (mins > 0 ? "&mins=" + mins : ""));
                 return;
             }
         }
-
         chain.doFilter(request, response);
     }
 

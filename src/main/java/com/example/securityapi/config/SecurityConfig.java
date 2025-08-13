@@ -49,7 +49,7 @@ public class SecurityConfig {
         return cfg.getAuthenticationManager();
     }
 
-    // Keep LockoutFilter as an explicit bean (it has a simple constructor)
+    // Keep LockoutFilter as an explicit bean (simple constructor)
     @Bean
     public LockoutFilter lockoutFilter(LoginAttemptService loginAttemptService) {
         return new LockoutFilter(loginAttemptService);
@@ -57,7 +57,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-                                           // CaptchaValidationFilter is discovered via @Component and injected here
+                                           // CaptchaValidationFilter is provided via @Component
                                            CaptchaValidationFilter captchaFilter,
                                            LockoutFilter lockoutFilter,
                                            LoginSuccessHandler successHandler,
@@ -81,16 +81,14 @@ public class SecurityConfig {
                                 "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'"))
                         .referrerPolicy(rp -> rp.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
                         .frameOptions(fo -> fo.sameOrigin())
-                        .contentTypeOptions(cto -> {})
-                )
+                        .contentTypeOptions(cto -> {}))
 
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionFixation(sf -> sf.migrateSession())
                         .invalidSessionUrl("/invalidSession")
                         .maximumSessions(1)
-                        .expiredUrl("/sessionExpired")
-                )
+                        .expiredUrl("/sessionExpired"))
 
                 .csrf(csrf -> {})
 
@@ -104,16 +102,14 @@ public class SecurityConfig {
                                 "/error", "/favicon.ico"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
 
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .successHandler(successHandler)
                         .failureHandler(failureHandler)
-                        .permitAll()
-                )
+                        .permitAll())
 
                 .logout(logout -> logout
                         .logoutUrl("/logout")
@@ -121,10 +117,9 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID")
-                        .permitAll()
-                );
+                        .permitAll());
 
-        // Filters: Lockout -> Captcha -> UsernamePasswordAuthenticationFilter
+        // Filters: Lockout → Captcha → UsernamePasswordAuthenticationFilter
         http.addFilterBefore(lockoutFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(captchaFilter, LockoutFilter.class);
 

@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/cart") //Maps all methods starting with /cart
+@RequestMapping("/cart") // Maps all methods starting with /cart
 public class CartController {
 
     private final CartItemService cartItemService;
@@ -41,7 +41,7 @@ public class CartController {
         this.chartHistoryService = chartHistoryService;
     }
 
-    @GetMapping //@GetMapping becomes /cart
+    @GetMapping // becomes /cart
     public String viewCart(Model model, HttpSession session) {
         String username = (String) session.getAttribute("loggedInUser");
         if (username == null) return "redirect:/login";
@@ -49,9 +49,7 @@ public class CartController {
         Customer customer = customerService.findByUsername(username);
         List<CartItem> cartItems = cartItemService.getCartItems(customer);
 
-        double totalPrice = cartItems.stream()//Creates a stream from the cart items
-                                              //Maps each item to a subtotal: price * quantity
-                                              //Converts to a double stream and sums them up
+        double totalPrice = cartItems.stream()
                 .mapToDouble(item -> item.getBook().getPrice() * item.getQuantity())
                 .sum();
 
@@ -61,93 +59,109 @@ public class CartController {
         return "cart";
     }
 
-   // @PostMapping("/update")
-   @PutMapping("/update-ajax") //updating
-   @ResponseBody //Tells Spring not to render a view, but instead return the object (usually a Map or JSON) directly in the HTTP response body. Used for AJAX/REST responses.
-   public Map<String, Object> updateCartAjax(@RequestBody Map<String, String> payload, HttpSession session) { //@RequestBody Maps the incoming JSON body of a POST/PUT/DELETE request to a Map<String, String> or custom object. Useful for AJAX (not form posts).
-       String username = (String) session.getAttribute("loggedInUser");
-       Map<String, Object> response = new HashMap<>();
+    @PutMapping("/update-ajax")
+    @ResponseBody
+    public Map<String, Object> updateCartAjax(@RequestBody Map<String, String> payload, HttpSession session) {
+        String username = (String) session.getAttribute("loggedInUser");
+        Map<String, Object> response = new HashMap<>();
 
-       if (username == null) {
-           response.put("success", false);
-           response.put("message", "Not logged in");
-           return response;
-       }
+        if (username == null) {
+            response.put("success", false);
+            response.put("message", "Not logged in");
+            return response;
+        }
 
-       try {
-           Long cartItemId = Long.parseLong(payload.get("cartItemId"));
-           int quantity = Integer.parseInt(payload.get("quantity"));
-           cartItemService.updateQuantity(cartItemId, quantity);
-           response.put("success", true);
-       } catch (Exception e) {
-           response.put("success", false);
-           response.put("message", e.getMessage());
-       }
+        try {
+            // ✅ safe parsing with defaults
+            Long cartItemId = Long.valueOf(payload.getOrDefault("cartItemId", "-1"));
+            int quantity = Integer.parseInt(payload.getOrDefault("quantity", "0"));
 
-       return response;
-   }
+            if (cartItemId < 0) {
+                response.put("success", false);
+                response.put("message", "Invalid cart item ID");
+                return response;
+            }
+            if (quantity < 1) {
+                response.put("success", false);
+                response.put("message", "Quantity must be at least 1.");
+                return response;
+            }
 
-    @PostMapping("/add") //@PostMapping("/add") becomes /cart/add
+            Customer customer = customerService.findByUsername(username);
+
+            // 🔐 IDOR-safe service call (scoped to owner)
+            cartItemService.updateQuantityOwned(cartItemId, quantity, customer);
+
+            response.put("success", true);
+        } catch (NumberFormatException nfe) {
+            response.put("success", false);
+            response.put("message", "Invalid number format for cartItemId or quantity");
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
+    @PostMapping("/add") // becomes /cart/add
     public String addToCart(@RequestParam("bookId") Long bookId,
-                            //@RequestParam(defaultValue = "1") int quantity,
                             @RequestParam(name = "quantity", defaultValue = "1") int quantity,
                             HttpSession session,
-                            RedirectAttributes redirectAttributes) { // Add RedirectAttributes for user feedback
+                            RedirectAttributes redirectAttributes) {
         String username = (String) session.getAttribute("loggedInUser");
         if (username == null) {
             return "redirect:/login";
-
         }
         try {
             Customer customer = customerService.findByUsername(username);
             cartItemService.addToCart(customer, bookId, quantity);
-            redirectAttributes.addFlashAttribute("successMessage", "Book added to cart successfully!"); ////This is used to pass flash messages (one-time attributes) during a redirect
-
+            redirectAttributes.addFlashAttribute("successMessage", "Book added to cart successfully!");
         } catch (BookNotFoundException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/books"; //The prefix redirect: tells Spring not to render a template called cart.html, but instead send a client-side HTTP redirect to /cart.
-            //This avoids double form submissions and follows the POST-Redirect-GET pattern.// Redirect to the main book list page
-
+            return "redirect:/books";
         } catch (CartItemException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/cart"; // Redirect back to the cart
+            return "redirect:/cart";
         }
         return "redirect:/cart";
     }
+    @DeleteMapping("/remove-ajax")
+    @ResponseBody
+    public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> payload, HttpSession session) {
+        String username = (String) session.getAttribute("loggedInUser");
+        Map<String, Object> response = new HashMap<>();
 
-//    @PostMapping("/remove")
-//    public String removeFromCart(@RequestParam("cartItemId") Long cartItemId,
-//                                 HttpSession session) {
-//        String username = (String) session.getAttribute("loggedInUser");
-//        if (username == null) return "redirect:/login";
-//
-//        cartItemService.removeCartItemById(cartItemId);
-//        return "redirect:/cart";
-//    }
-    //@PostMapping("/remove")
-@DeleteMapping("/remove-ajax") //@DeleteMapping("/remove-ajax"): This is an endpoint for AJAX-based cart item removal (uses fetch or $.ajax)
-@ResponseBody
-public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> payload, HttpSession session) { //@RequestBody Map<String, String> payload: Reads JSON payload like {"cartItemId": "123"}
-    String username = (String) session.getAttribute("loggedInUser");
-    Map<String, Object> response = new HashMap<>(); //Map<String, Object> response = new HashMap<>();: Will hold response data like:{"success": true, "message": "Removed successfully"}
+        if (username == null) {
+            response.put("success", false);
+            response.put("message", "Not logged in");
+            return response;
+        }
 
-    if (username == null) {
-        response.put("success", false); //"Add a key "success" to the map with value true.
-        response.put("message", "Not logged in");
+        try {
+            // ✅ safe parsing with default
+            Long cartItemId = Long.valueOf(payload.getOrDefault("cartItemId", "-1"));
+            if (cartItemId < 0) {
+                response.put("success", false);
+                response.put("message", "Invalid cart item ID");
+                return response;
+            }
+
+            Customer customer = customerService.findByUsername(username);
+
+            // 🔐 IDOR-safe service call (scoped to owner)
+            cartItemService.removeCartItemOwned(cartItemId, customer);
+
+            response.put("success", true);
+        } catch (NumberFormatException nfe) {
+            response.put("success", false);
+            response.put("message", "Invalid number format for cartItemId");
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
         return response;
     }
 
-    try {
-        Long cartItemId = Long.parseLong(payload.get("cartItemId"));
-        cartItemService.removeCartItemById(cartItemId);
-        response.put("success", true);
-    } catch (Exception e) {
-        response.put("success", false);
-        response.put("message", e.getMessage());
-    }
-
-    return response;
-}
     @PostMapping("/checkout")
     public String checkout(@RequestParam("paymentInfo") String paymentInfo,
                            @RequestParam(value = "checkCardIntegrity", required = false) String checkCardIntegrity,
@@ -166,7 +180,6 @@ public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> paylo
         }
 
         boolean integrityEnabled = (checkCardIntegrity != null);
-        //if (integrityEnabled && !isValidCardNumber(paymentInfo)) {
         if (integrityEnabled && !CardValidator.isValidCardNumber(paymentInfo)) {
             redirectAttributes.addFlashAttribute("error", "Invalid card number.");
             return "redirect:/cart";
@@ -174,7 +187,8 @@ public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> paylo
 
         double totalPaid = 0;
         for (CartItem item : cartItems) {
-            cartItemService.updateQuantity(item.getId(), item.getQuantity());
+            // 🔐 IDOR-safe quantity update during checkout too
+            cartItemService.updateQuantityOwned(item.getId(), item.getQuantity(), customer);
 
             Book book = item.getBook();
             int remaining = book.getCopies() - item.getQuantity();
@@ -188,34 +202,18 @@ public Map<String, Object> removeCartAjax(@RequestBody Map<String, String> paylo
 
         cartItemService.clearCart(customer);
         session.setAttribute("checkoutTotal", totalPaid);
-        return "redirect:/cart/checkout-popup"; //(URL-based redirection) @GetMapping("/checkout-popup") -> return "checkout" (controller-based rendering)
+        return "redirect:/cart/checkout-popup";
     }
-/*
-POST /cart/checkout
-→ return "redirect:/cart/checkout-popup"
-→ browser navigates to /cart/checkout-popup
-→ @GetMapping("/checkout-popup") is invoked
-→ return "checkout"
-→ renders checkout.html
- */
 
-//    private boolean isValidCardNumber(String number) {
-//        number = number.replaceAll("\\s+", "");
-//        if (!number.matches("\\d{13,19}")) return false;
-//
-//        int sum = 0;
-//        boolean alternate = false;
-//        for (int i = number.length() - 1; i >= 0; i--) {
-//            int n = Integer.parseInt(number.substring(i, i + 1));
-//            if (alternate) {
-//                n *= 2;
-//                if (n > 9) n -= 9;
-//            }
-//            sum += n;
-//            alternate = !alternate;
-//        }
-//        return (sum % 10 == 0);
-//    }
+    /*
+    POST /cart/checkout
+    → return "redirect:/cart/checkout-popup"
+    → browser navigates to /cart/checkout-popup
+    → @GetMapping("/checkout-popup") is invoked
+    → return "checkout"
+    → renders checkout.html
+    */
+
     @GetMapping("/checkout-popup")
     public String checkoutPopup(HttpSession session, Model model) {
         Double total = (Double) session.getAttribute("checkoutTotal");

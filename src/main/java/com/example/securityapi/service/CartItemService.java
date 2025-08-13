@@ -7,6 +7,7 @@ import com.example.securityapi.model.Book;
 import com.example.securityapi.model.CartItem;
 import com.example.securityapi.model.Customer;
 import com.example.securityapi.repository.CartItemRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +24,37 @@ public class CartItemService {
         return cartItemRepository.findByCustomer(customer);
     }
 
+    // 🔐 NEW: 🔐 NEW: update quantity only if the item belongs to this customer - CWE-639
+    @Transactional
+    public void updateQuantityOwned(Long cartItemId, int quantity, Customer customer) {
+        CartItem cartItem = cartItemRepository
+                .findByIdAndCustomer_Id(cartItemId, customer.getId())
+                .orElseThrow(() -> new CartItemException(
+                        "Cannot update quantity. Cart item not found for this user."));
+
+        Book book = cartItem.getBook();
+        int availableCopies = book.getCopies();
+
+        if (quantity < 1) {
+            throw new CartItemException("Quantity must be at least 1.");
+        }
+        if (quantity > availableCopies) {
+            throw new CartItemException("Cannot update quantity. Requested quantity (" + quantity
+                    + ") exceeds available copies (" + availableCopies + ").");
+        }
+        cartItem.setQuantity(quantity);
+        cartItemRepository.save(cartItem);
+    }
+
+    // 🔐 NEW: delete only if the item belongs to this customer
+    @Transactional
+    public void removeCartItemOwned(Long cartItemId, Customer customer) {
+        var exists = cartItemRepository.findByIdAndCustomer_Id(cartItemId, customer.getId()).isPresent();
+        if (!exists) {
+            throw new CartItemException("Cannot remove item. Not found for this user.");
+        }
+        cartItemRepository.deleteByIdAndCustomer_Id(cartItemId, customer.getId());
+    }
 //    public void addToCart(Customer customer, Optional<Book> bookOpt, int quantity) {
 //        Book book = bookOpt.orElseThrow(() -> new IllegalArgumentException("Book not found"));
 //
@@ -51,6 +83,7 @@ public class CartItemService {
 //            .build();
 //    cartItemRepository.save(item);
 //}
+    @Transactional
     public void addToCart(Customer customer, Long bookId, int quantity) throws BookNotFoundException, CartItemException {
         Book book = bookService.getBookById(bookId);
         if (quantity <= 0) {
@@ -91,7 +124,7 @@ public class CartItemService {
     public void removeFromCart(Customer customer, Long bookId) {
         cartItemRepository.deleteByCustomerAndBookId(customer, bookId);
     }
-
+    @Transactional
     public void clearCart(Customer customer) {
         List<CartItem> items = cartItemRepository.findByCustomer(customer);
         cartItemRepository.deleteAll(items);
