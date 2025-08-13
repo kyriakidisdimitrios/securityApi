@@ -15,6 +15,8 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -196,13 +198,24 @@ public class CustomerController {
 
     // Keep your custom logout link/behavior
     @GetMapping("/customLogout")
-    public String logout(HttpServletRequest request) {
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(false);
         if (session != null) {
             Object u = session.getAttribute("loggedInUser");
-            logger.info("Customer '{}' Logout", s(u));
+            logger.info("Customer '{}' Logout", s(u)); // keep your log
             session.invalidate();
         }
+
+        // 🔒 remove JSESSIONID so no "invalid session" redirect happens
+        ResponseCookie cookie = ResponseCookie.from("JSESSIONID", "")
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .maxAge(0) // delete it immediately
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
         return "redirect:/login?logout";
     }
 
