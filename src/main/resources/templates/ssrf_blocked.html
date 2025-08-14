@@ -1,3 +1,4 @@
+<!--ssrf_blocked.html-->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -11,7 +12,6 @@
 <section layout:fragment="content" class="text-center mt-5">
     <h1 class="display-6 text-danger">Request Blocked</h1>
     <p class="lead">We prevented a potentially unsafe outbound request.</p>
-
     <div class="alert alert-warning w-75 mx-auto mt-4 text-start">
         <strong>Reason:</strong>
         <span th:text="${reason} ?: 'URL failed security validation.'">URL failed security validation.</span>
@@ -19,7 +19,6 @@
         <strong>URL:</strong>
         <code th:text="${blockedUrl} ?: '-'">-</code>
     </div>
-
     <a th:href="@{/}" class="btn btn-primary mt-3">Go Home</a>
 </section>
 </body>

@@ -1,11 +1,9 @@
 // CartItem.java
 package com.example.securityapi.model;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.*;
-
 @Entity
 @Table(name = "cart_items")
 //@Data
@@ -16,19 +14,15 @@ import lombok.*;
 @Setter
 //CartItem -> Customer & Book (Many-to-One)
 public class CartItem {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @ManyToOne(optional = false)
     @JoinColumn(name = "customer_id")
     private Customer customer;
-
     @ManyToOne(optional = false)
     @JoinColumn(name = "book_id")
     private Book book;
-
     @Column(nullable = false)
     @Min(1) @Max(9999) int quantity;
 }

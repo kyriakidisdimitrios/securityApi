@@ -1,8 +1,8 @@
+//cart.js
 document.addEventListener('DOMContentLoaded', () => {
     // --- CSRF helpers (read from <meta> in layout.html) ---
     const CSRF_TOKEN_META  = document.querySelector('meta[name="_csrf"]');
     const CSRF_HEADER_META = document.querySelector('meta[name="_csrf_header"]');
-
     function buildJsonHeaders() {
         const headers = { 'Content-Type': 'application/json' };
         const token  = CSRF_TOKEN_META?.getAttribute('content');
@@ -12,13 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return headers;
     }
-
     // Quantity update via AJAX
     document.querySelectorAll('.cart-qty-input').forEach(input => {
         input.addEventListener('change', function () {
             const cartItemId = this.getAttribute('data-cart-id');
             const quantity = this.value;
-
             fetch('/cart/update-ajax', {
                 method: 'PUT',
                 headers: buildJsonHeaders(),
@@ -38,14 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         });
     });
-
     // Remove item via AJAX
     document.querySelectorAll('.remove-cart-item').forEach(btn => {
         btn.addEventListener('click', function () {
             const cartItemId = this.getAttribute('data-cart-id');
-
             if (!confirm("Are you sure you want to remove this item?")) return;
-
             fetch('/cart/remove-ajax', {
                 method: 'DELETE',
                 headers: buildJsonHeaders(),
@@ -65,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         });
     });
-
     // ✅ Card Integrity Switch logic
     const switchInput = document.getElementById("cardIntegritySwitch");
     const cardInput = document.getElementById("paymentInfo");
@@ -79,17 +73,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 cardInput.removeAttribute("pattern");
             }
         }
-
         switchInput.addEventListener("change", updateCardValidation);
         updateCardValidation(); // initial setup
     }
 });
-
 // ✅ Make openPopup globally accessible
 function openPopup() {
     // Open the checkout popup window
-    window.open('/cart/checkout-popup', 'checkoutPopup', 'width=600,height=400');
-
+    window.open('/cart/checkout-popu`p', 'checkoutPopup', 'width=600,height=400');
     // Redirect the main window (not the popup) to /index after a brief delay
     setTimeout(() => {
         window.location.href = '/';

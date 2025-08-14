@@ -1,9 +1,7 @@
 package com.example.securityapi.model;
-
 import jakarta.persistence.*;
 import lombok.*; // Import Lombok if you want to use its annotations
 import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "chart_history") // Good practice to name the table explicitly
 @Getter

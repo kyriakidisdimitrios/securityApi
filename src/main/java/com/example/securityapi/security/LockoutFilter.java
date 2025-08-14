@@ -1,5 +1,4 @@
 package com.example.securityapi.security;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,23 +8,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;   // ⬅️ add
 import org.springframework.web.filter.OncePerRequestFilter;
 import static com.example.securityapi.utilities.LogSanitizer.s;
-
 import java.io.IOException;
-
 public class LockoutFilter extends OncePerRequestFilter {
-
     private static final Logger log = LoggerFactory.getLogger(LockoutFilter.class);
     private final LoginAttemptService attemptService;
-
     public LockoutFilter(LoginAttemptService attemptService) {
         this.attemptService = attemptService;
     }
-
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain chain) throws ServletException, IOException {
-
         if (isLoginPost(request)) {
             String username = request.getParameter("username"); // maybe null
             if (attemptService.isLocked(username)) {
@@ -39,7 +32,6 @@ public class LockoutFilter extends OncePerRequestFilter {
         }
         chain.doFilter(request, response);
     }
-
     private boolean isLoginPost(HttpServletRequest request) {
         return "POST".equalsIgnoreCase(request.getMethod())
                 && "/login".equals(request.getServletPath());

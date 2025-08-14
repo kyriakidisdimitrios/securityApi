@@ -1,6 +1,5 @@
 // CartItemService.java
 package com.example.securityapi.service;
-
 import com.example.securityapi.exception.BookNotFoundException;
 import com.example.securityapi.exception.CartItemException;
 import com.example.securityapi.model.Book;
@@ -9,9 +8,7 @@ import com.example.securityapi.model.Customer;
 import com.example.securityapi.repository.CartItemRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-
 @Service
 public class CartItemService {
     private final CartItemRepository cartItemRepository;
@@ -23,7 +20,6 @@ public class CartItemService {
     public List<CartItem> getCartItems(Customer customer) {
         return cartItemRepository.findByCustomer(customer);
     }
-
     // 🔐 NEW: 🔐 NEW: update quantity only if the item belongs to this customer - CWE-639
     @Transactional
     public void updateQuantityOwned(Long cartItemId, int quantity, Customer customer) {
@@ -31,10 +27,8 @@ public class CartItemService {
                 .findByIdAndCustomer_Id(cartItemId, customer.getId())
                 .orElseThrow(() -> new CartItemException(
                         "Cannot update quantity. Cart item not found for this user."));
-
         Book book = cartItem.getBook();
         int availableCopies = book.getCopies();
-
         if (quantity < 1) {
             throw new CartItemException("Quantity must be at least 1.");
         }
@@ -45,7 +39,6 @@ public class CartItemService {
         cartItem.setQuantity(quantity);
         cartItemRepository.save(cartItem);
     }
-
     // 🔐 NEW: delete it only if the item belongs to this customer
     @Transactional
     public void removeCartItemOwned(Long cartItemId, Customer customer) {
@@ -55,34 +48,6 @@ public class CartItemService {
         }
         cartItemRepository.deleteByIdAndCustomer_Id(cartItemId, customer.getId());
     }
-//    public void addToCart(Customer customer, Optional<Book> bookOpt, int quantity) {
-//        Book book = bookOpt.orElseThrow(() -> new IllegalArgumentException("Book not found"));
-//
-//        CartItem item = CartItem.builder()
-//                .customer(customer)
-//                .book(book)
-//                .quantity(quantity)
-//                .build();
-//
-//        cartItemRepository.save(item);
-//    }
-//public void addToCart(Customer customer, Optional<Book> bookOpt, int quantity) {
-//public void addToCart(Customer customer, Long bookId, int quantity) throws BookNotFoundException, CartItemException {
-//    //Book book = bookOpt.orElseThrow(() -> new CartItemException("Cannot add to cart: Book not found."));
-//    Book book = bookService.getBookById(bookId);
-//    if (quantity <= 0) {
-//        throw new CartItemException("Quantity must be a positive number.");
-//    }
-//    if (quantity > book.getCopies()) {
-//        throw new CartItemException("Cannot add to cart. Requested quantity exceeds available stock.");
-//    }
-//    CartItem item = CartItem.builder()
-//            .customer(customer)
-//            .book(book)
-//            .quantity(quantity)
-//            .build();
-//    cartItemRepository.save(item);
-//}
     @Transactional
     public void addToCart(Customer customer, Long bookId, int quantity) throws BookNotFoundException, CartItemException {
         Book book = bookService.getBookById(bookId);
@@ -97,7 +62,6 @@ public class CartItemService {
             if (newQuantity > book.getCopies()) {
                 throw new CartItemException("Cannot add to cart. Total quantity exceeds available stock.");
             }
-
             existingItem.setQuantity(newQuantity);
             cartItemRepository.save(existingItem);
         } else {
@@ -131,11 +95,9 @@ public class CartItemService {
                 .orElseThrow(() -> new CartItemException("Cannot update quantity. Cart item with ID " + cartItemId + " not found."));
         Book book = cartItem.getBook();
         int availableCopies = book.getCopies();
-
         if (quantity < 1) {
             throw new CartItemException("Quantity must be at least 1.");
         }
-
         if (quantity > availableCopies) {
             throw new CartItemException("Cannot update quantity. Requested quantity (" + quantity
                     + ") exceeds available copies (" + availableCopies + ").");

@@ -1,5 +1,4 @@
 package com.example.securityapi.service;
-
 import com.example.securityapi.exception.BookNotFoundException;
 import com.example.securityapi.model.Author;
 import com.example.securityapi.model.Book;
@@ -9,7 +8,6 @@ import com.example.securityapi.repository.CartItemRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Set;
-
 @Service
 public class BookService {
     private final BookRepository bookRepository;
@@ -21,7 +19,6 @@ public class BookService {
     public List<Book> findAllBooks() {
         return bookRepository.findAll();
     }
-
     public Book getBookById(Long id) throws BookNotFoundException {
         return bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException(id));
@@ -47,7 +44,6 @@ public Book updateBook(Long id, Book updatedBookData) throws BookNotFoundExcepti
     existingBook.setYear(updatedBookData.getYear());
     existingBook.setPrice(updatedBookData.getPrice());
     existingBook.setCopies(updatedBookData.getCopies());
-
     return bookRepository.save(existingBook);
 }
 public void deleteBook(Long id) throws BookNotFoundException {

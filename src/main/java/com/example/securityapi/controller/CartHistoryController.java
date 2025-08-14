@@ -10,23 +10,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import java.security.Principal;
 import java.util.List;
-
 // History
 @Controller
 @RequestMapping("/history")
 public class CartHistoryController {
-
     private final CartHistoryService cartHistoryService;
     private final CustomerService customerService;
-
     public CartHistoryController(CartHistoryService cartHistoryService, CustomerService customerService) {
         this.cartHistoryService = cartHistoryService;
         this.customerService = customerService;
     }
-
     @GetMapping
     public String viewPurchaseHistory(Model model, HttpSession session, Principal principal) {
         String username = (principal != null ? principal.getName()
@@ -37,5 +32,4 @@ public class CartHistoryController {
         model.addAttribute("historyList", userHistory);
         return "chart_history";
     }
-
 }

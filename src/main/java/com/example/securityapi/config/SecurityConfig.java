@@ -1,5 +1,4 @@
 package com.example.securityapi.config;
-
 import com.example.securityapi.security.CaptchaValidationFilter;
 import com.example.securityapi.security.LockoutFilter;
 import com.example.securityapi.security.LoginFailureHandler;
@@ -21,42 +20,33 @@ import org.springframework.security.web.PortMapperImpl;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
-
 import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
-
 @Configuration
-@EnableMethodSecurity()
+@EnableMethodSecurity() // keep method-level security
 public class SecurityConfig {
-
     @Bean
     public Clock clock() {
         return Clock.systemUTC();
     }
-
     @Value("${server.http.port:8080}")
     private String httpPort;
-
     @Value("${server.port:9443}")
     private String httpsPort;
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
         return cfg.getAuthenticationManager();
     }
-
     // Keep LockoutFilter as an explicit bean (simple constructor)
     @Bean
     public LockoutFilter lockoutFilter(LoginAttemptService loginAttemptService) {
         return new LockoutFilter(loginAttemptService);
     }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            // CaptchaValidationFilter is provided via @Component
@@ -64,16 +54,16 @@ public class SecurityConfig {
                                            LockoutFilter lockoutFilter,
                                            LoginSuccessHandler successHandler,
                                            LoginFailureHandler failureHandler) throws Exception {
-
+        // HTTP→HTTPS port mapping for redirects
         PortMapperImpl portMapper = new PortMapperImpl();
         Map<String, String> mappings = new HashMap<>();
         mappings.put(httpPort, httpsPort);
         portMapper.setPortMappings(mappings);
-
         http
+                // Enforce HTTPS everywhere
                 .requiresChannel(ch -> ch.anyRequest().requiresSecure())
                 .portMapper(pm -> pm.portMapper(portMapper))
-
+                // Security headers (HSTS, CSP, Referrer-Policy, X-Frame-Options, X-Content-Type-Options)
                 .headers(headers -> headers
                         .httpStrictTransportSecurity(hsts -> hsts
                                 .maxAgeInSeconds(31536000)
@@ -83,19 +73,20 @@ public class SecurityConfig {
                                 "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'"))
                         .referrerPolicy(rp -> rp.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-                        .contentTypeOptions(cto -> {}))
-
+                        .contentTypeOptions(cto -> {})
+                )
+                // Session protection
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::migrateSession)
                         .invalidSessionUrl("/invalidSession")
                         .maximumSessions(1)
                         .expiredUrl("/sessionExpired"))
-
+                // CSRF is handled by Spring Security form login; explicit config left empty
                 .csrf(csrf -> {})
-
+                // Access-denied page
                 .exceptionHandling(ex -> ex.accessDeniedPage("/access-denied"))
-
+                // Authorization rules (KEEP existing plus add /customers/** as admin-only)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/login", "/register", "/captcha-image",
@@ -105,15 +96,17 @@ public class SecurityConfig {
                                 "/error", "/favicon.ico"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated())
-
+                        .requestMatchers("/customers/**").hasRole("ADMIN") // <-- NEW: protect customer list/PII
+                        .anyRequest().authenticated()
+                )
+                // Form login (custom success/failure handlers + CAPTCHA filter)
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .successHandler(successHandler)
                         .failureHandler(failureHandler)
                         .permitAll())
-
+                // Logout
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
@@ -121,11 +114,9 @@ public class SecurityConfig {
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll());
-
         // Filters: Lockout → Captcha → UsernamePasswordAuthenticationFilter
         http.addFilterBefore(lockoutFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(captchaFilter, LockoutFilter.class);
-
         return http.build();
     }
 }

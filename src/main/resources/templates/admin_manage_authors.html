@@ -1,3 +1,4 @@
+<!--admin_manage_authors.html-->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -8,13 +9,10 @@
     <title>Manage Authors | Admin</title>
 </head>
 <body>
-
 <section layout:fragment="content" class="container mt-4">
     <h2 class="text-center mb-4">📚 Manage Authors</h2>
-
     <!-- ✅ Error Message -->
     <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
-
     <!-- ✅ Add Author Form -->
     <form th:action="@{/admin/authors/add}" method="post" th:object="${newAuthor}">
         <!-- new august 13 -->
@@ -36,7 +34,6 @@
             </div>
         </div>
     </form>
-
     <!-- ✅ Author List -->
     <table class="table table-striped">
         <thead>
@@ -63,6 +60,5 @@
         </tbody>
     </table>
 </section>
-
 </body>
 </html>

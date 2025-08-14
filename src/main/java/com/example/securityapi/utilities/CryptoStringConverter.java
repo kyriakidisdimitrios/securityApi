@@ -1,15 +1,12 @@
 package com.example.securityapi.utilities;
-
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
-
 @Converter()
 public class CryptoStringConverter implements AttributeConverter<String, String> {
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
@@ -28,7 +25,6 @@ public class CryptoStringConverter implements AttributeConverter<String, String>
         } catch (Exception e) { return null; }
     }
     private static boolean enabledMethod() { return KEY == null; }
-
     @Override
     public String convertToDatabaseColumn(String attribute) {
         if (attribute == null || enabledMethod()) return attribute;

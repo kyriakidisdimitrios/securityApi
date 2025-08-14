@@ -1,3 +1,4 @@
+<!--chart_history.html-->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -7,7 +8,6 @@
   <title>Purchase History</title>
 </head>
 <body>
-
 <section layout:fragment="content" class="container mt-4">
   <h2 class="mb-3">Your Purchase History</h2>
   <hr/>
@@ -17,7 +17,6 @@
     </div>
 <!--    <a th:href="@{/books}" class="btn btn-primary">Browse Books</a>-->
   </div>
-
   <div th:if="${historyList != null && !historyList.isEmpty()}" class="accordion" id="historyAccordion">
     <div th:each="history, iterStat : ${historyList}" class="accordion-item">
       <h2 class="accordion-header" th:id="'heading' + ${iterStat.index}">
@@ -39,6 +38,5 @@
     </div>
   </div>
 </section>
-
 </body>
 </html>
