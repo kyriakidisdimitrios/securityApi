@@ -30,4 +30,9 @@ public class GlobalExceptionHandler {
                 "An unexpected error occurred. Please contact support if the issue persists.");
         return "redirect:/error";
     }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public String handleIllegalArgument(IllegalArgumentException ex, RedirectAttributes ra) {
+        ra.addFlashAttribute("error", ex.getMessage());
+        return "redirect:/register";
+    }
 }

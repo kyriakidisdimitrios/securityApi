@@ -1,6 +1,7 @@
 package com.example.securityapi.service;
 import com.example.securityapi.model.Customer;
 import com.example.securityapi.repository.CustomerRepository;
+import com.example.securityapi.utilities.PasswordPolicy;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriUtils;
 import static com.example.securityapi.utilities.LogSanitizer.s;
+import static com.example.securityapi.utilities.PasswordPolicy.isStrong;
 import static com.example.securityapi.utilities.UrlValidatorUtil.isSafeUrl;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -30,7 +32,12 @@ public class CustomerService {
     }
     @Transactional
     public void saveCustomer(Customer customer) {
-        // Check if the password is already hashed to avoid rehashing
+        // Enforce strong password (CWE-620)
+        if (!isStrong(customer.getPassword(), customer.getUsername(), customer.getEmail())) {
+            logger.warn("Weak password rejected for username={}", s(customer.getUsername()));
+            throw new IllegalArgumentException(PasswordPolicy.requirements());
+        }
+        // Hash if not already hashed
         if (!customer.getPassword().startsWith("$2a$")) {
             String hashedPassword = passwordEncoder.encode(customer.getPassword());
             customer.setPassword(hashedPassword);
