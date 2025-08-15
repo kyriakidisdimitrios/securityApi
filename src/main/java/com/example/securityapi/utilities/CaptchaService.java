@@ -1,17 +1,19 @@
 package com.example.securityapi.utilities;
+
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.security.SecureRandom;
+
 @Service
 public class CaptchaService {
     private static final String CAPTCHA_SESSION_KEY = "captcha";
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
+
     /**
      * Generates a CAPTCHA string and stores it in the session.
-     * Returns the code so the controller/view can display it.
      */
     public String generateCaptcha(HttpSession session) {
         StringBuilder captcha = new StringBuilder();
@@ -22,13 +24,17 @@ public class CaptchaService {
         session.setAttribute(CAPTCHA_SESSION_KEY, captchaStr);
         return captchaStr;
     }
+
     /**
-     * Validates the user's input against the stored CAPTCHA.
+     * ✅ FIXED: Validates the user's input against the stored CAPTCHA.
+     * This method now correctly returns true for a valid CAPTCHA and false otherwise.
      */
-    public boolean validateCaptchaCustom(String userInput, HttpSession session) {
-        String captcha = (String) session.getAttribute(CAPTCHA_SESSION_KEY);
-        return captcha == null || !captcha.equalsIgnoreCase(userInput);
+    public boolean validateCaptcha(String userInput, HttpSession session) {
+        String storedCaptcha = (String) session.getAttribute(CAPTCHA_SESSION_KEY);
+        // Ensure both the stored CAPTCHA and user input are not null before comparing
+        return storedCaptcha != null && userInput != null && storedCaptcha.equalsIgnoreCase(userInput);
     }
+
     /**
      * OPTIONAL: Returns a CAPTCHA image as a BufferedImage for <img> rendering.
      */

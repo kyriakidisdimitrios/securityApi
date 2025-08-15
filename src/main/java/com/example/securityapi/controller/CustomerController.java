@@ -98,15 +98,17 @@ public class CustomerController {
                                    HttpSession session,
                                    Model model) {
         // 1️⃣ CAPTCHA check first
-        if (captchaService.validateCaptchaCustom(captchaInput, session)) {
+        if (!captchaService.validateCaptcha(captchaInput, session)) {
             model.addAttribute("error", "Invalid CAPTCHA. Please try again.");
             captchaService.generateCaptcha(session); // new challenge
             return "register";
         }
+
         // 2️⃣ Bean validation
         if (result.hasErrors()) {
             return "register";
         }
+
         // 3️⃣ Domain validation
         if (customer.getDateOfBirth().isBefore(LocalDate.of(1900, 1, 1)) ||
                 customer.getDateOfBirth().isAfter(LocalDate.of(2010, 12, 31))) {
@@ -125,8 +127,17 @@ public class CustomerController {
             result.rejectValue("email", "error.customer", "Email already exists");
             return "register";
         }
-        // 4️⃣ Save customer (hashing handled in service)
-        customerService.saveCustomer(customer);
+
+        // 4️⃣ Save customer (✅ ADDED try-catch for better logging)
+        try {
+            customerService.saveCustomer(customer);
+        } catch (Exception e) {
+            // This will log the specific database or encryption error to your console
+            logger.error("!!! CRITICAL: Failed to save customer '{}'. Error: {}", s(customer.getUsername()), e.getMessage(), e);
+            model.addAttribute("error", "Could not create account due to a system error. Please contact support.");
+            return "register";
+        }
+
         return "redirect:/login";
     }
     // Show a login form ✅ generate CAPTCHA

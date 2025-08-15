@@ -24,7 +24,7 @@ public class CaptchaValidationFilter extends OncePerRequestFilter {
         if ("POST".equalsIgnoreCase(request.getMethod()) && "/login".equals(request.getServletPath())) {
             HttpSession session = request.getSession(false);
             String captcha = request.getParameter("captcha");
-            if (session == null || captchaService.validateCaptchaCustom(captcha, session)) {
+            if (session == null || !captchaService.validateCaptcha(captcha, session)) {
                 response.sendRedirect("/login?error=Invalid%20CAPTCHA");
                 return;
             }
