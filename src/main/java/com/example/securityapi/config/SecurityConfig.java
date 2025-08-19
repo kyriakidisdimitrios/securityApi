@@ -114,6 +114,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/login", "/register", "/captcha-image",
+                                // ✅ This is the ONLY change: Moved session pages into the main permitAll list
                                 "/invalidSession", "/sessionExpired", "/access-denied",
                                 "/css/**", "/js/**", "/webjars/**", "/images/**", "/fonts/**",
                                 "/ssrf-blocked",
