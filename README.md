@@ -37,7 +37,13 @@ A full-stack web application for managing and purchasing books online, implement
 | 🔐 Spring Security      | Basic access/session protection |
 
 ---
+## 📝 Vulnerability Assessment Report
 
+The complete report detailing all identified vulnerabilities, the implemented security controls, and the justification for each fix can be found here:
+
+- **[Assignment 3 - Vulnerability Assessment Report](src/main/resources/static/documents/Assignment%203%20-%20Kyriakidis%20Dimitrios.pdf)**
+
+---
 ## 🛠️ Installation & Setup (Beginner Friendly)
 
 ### ✅ Step 1: Install Java 21 (OpenJDK)

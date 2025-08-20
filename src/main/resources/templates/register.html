@@ -12,6 +12,30 @@
         .pw-fair   { background: #fd7e14; }   /* orange */
         .pw-good   { background: #ffc107; }   /* yellow */
         .pw-strong { background: #28a745; }   /* green  */
+
+        /* Make the MFA section pop */
+        .mfa-emphasis {
+            border: 2px dashed #0d6efd;
+            background: #f0f7ff;
+            border-radius: .75rem;
+            padding: .75rem 1rem;
+        }
+        .form-switch .form-check-input {
+            transform: scale(1.5);
+            cursor: pointer;
+            margin-left: .75rem;
+            margin-right: .5rem;
+        }
+        .mfa-label {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .mfa-help {
+            margin: .35rem 0 0 0;
+            font-size: .875rem;
+        }
     </style>
 </head>
 <body>
@@ -62,21 +86,27 @@
 
             <!-- Email + 2FA toggle (checked by default) -->
             <div class="mb-3">
-                <label for="email" class="form-label d-flex justify-content-between align-items-center">
-                    <span>Email</span>
-                    <span class="ms-2 d-flex align-items-center gap-2">
-                        <span class="text-muted small">Enable 2FA (email OTP)</span>
-                        <!-- Bind directly to mfaEnabled field -->
-                        <input type="checkbox" th:field="*{mfaEnabled}" class="form-check-input"
-                               style="transform: scale(1.2);" checked />
-                    </span>
-                </label>
+                <label for="email" class="form-label">Email</label>
 
-                <div class="input-group">
+                <div class="input-group mb-2">
                     <input type="email" id="email" class="form-control" placeholder="Enter email" th:field="*{email}" required />
                 </div>
-
                 <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+
+                <!-- Emphasized MFA section -->
+                <div class="mfa-emphasis mt-2">
+                    <div class="form-check form-switch">
+                        <!-- Bind directly to mfaEnabled; ensure id for clarity -->
+                        <input class="form-check-input" type="checkbox" id="mfaEnabled" th:field="*{mfaEnabled}" checked />
+                        <label class="form-check-label mfa-label" for="mfaEnabled">
+                            Enable Two-Factor Authentication (Email OTP)
+                            <span class="badge bg-primary">Recommended</span>
+                        </label>
+                    </div>
+                    <p class="mfa-help text-muted">
+                        When enabled, after entering your password you’ll receive a 6-digit code via email. Enter that code to complete sign-in.
+                    </p>
+                </div>
             </div>
 
             <!-- Password -->
@@ -131,10 +161,9 @@
     <!-- Preserve toggle state if page reloads after validation -->
     <script>
         (function(){
-            const box = document.getElementById('mfaOptIn');
+            const box = document.getElementById('mfaEnabled');
             if (!box) return;
-            // Nothing extra needed: Spring/Thymeleaf will preserve checked state
-            // because of th:field="*{mfaEnabled}" binding.
+            // Nothing extra needed: th:field="*{mfaEnabled}" preserves state on re-render.
         })();
     </script>
 </section>
