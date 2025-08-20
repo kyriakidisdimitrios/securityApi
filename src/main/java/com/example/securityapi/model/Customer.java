@@ -9,6 +9,8 @@ import com.example.securityapi.utilities.CryptoStringConverter;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.ToString;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "customers")
@@ -27,18 +29,18 @@ public class Customer {
 
     @Column(nullable = false, unique = true)
     @NotBlank(message = "Username is required")
-    @Pattern(regexp = "^[A-Za-z0-9._-]{3,32}$",
-            message = "Username must be 3–32 characters (letters, digits, dot, underscore, hyphen)")
+    //@Pattern(regexp = "^[A-Za-z0-9._-]{3,32}$",
+    //        message = "Username must be 3–32 characters (letters, digits, dot, underscore, hyphen)")
     private String username;
 
     @NotBlank(message = "Name is required")
-    @Pattern(regexp = "^[A-Z][a-z]{2,32}$",
-            message = "Name must start with uppercase and be 3–33 letters")
+    //@Pattern(regexp = "^[A-Z][a-z]{2,32}$",
+    //        message = "Name must start with uppercase and be 3–33 letters")
     private String name;
 
     @NotBlank(message = "Surname is required")
-    @Pattern(regexp = "^[A-Z][a-z]{2,32}$",
-            message = "Surname must start with uppercase and be 3–33 letters")
+    //@Pattern(regexp = "^[A-Z][a-z]{2,32}$",
+    //        message = "Surname must start with uppercase and be 3–33 letters")
     private String surname;
 
     @NotNull(message = "Date of birth is required")
@@ -72,4 +74,15 @@ public class Customer {
 
     @Column(nullable = false)
     private boolean isAdmin;
+
+    // MFA
+    @Column(nullable = false)
+    private boolean mfaEnabled = false;
+
+    @JsonIgnore
+    @ToString.Exclude
+    private String mfaCodeHash;
+
+    @JsonIgnore
+    private LocalDateTime mfaCodeExpiry;
 }

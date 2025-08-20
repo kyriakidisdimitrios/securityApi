@@ -76,4 +76,28 @@ public class CustomerService {
         ra.addFlashAttribute("successMessage", "Avatar fetch initiated (demo).");
         return "redirect:/";
     }
+    @Transactional
+    public void updateMfaEnabledByUsername(String username, boolean enabled) {
+        Customer db = customerRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+
+        db.setMfaEnabled(enabled);
+        if (!enabled) {
+            db.setMfaCodeHash(null);
+            db.setMfaCodeExpiry(null);
+        }
+        customerRepository.save(db); // no password policy touched
+    }
+
+    @Transactional
+    public void persistMfaState(Customer customerWithNewMfaState) {
+        Customer db = customerRepository.findById(customerWithNewMfaState.getId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "User not found: id=" + customerWithNewMfaState.getId()));
+
+        db.setMfaEnabled(customerWithNewMfaState.isMfaEnabled());
+        db.setMfaCodeHash(customerWithNewMfaState.getMfaCodeHash());
+        db.setMfaCodeExpiry(customerWithNewMfaState.getMfaCodeExpiry());
+        customerRepository.save(db);
+    }
 }

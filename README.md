@@ -9,10 +9,12 @@ A full-stack web application for managing and purchasing books online, implement
 - ✅ Bootstrap (UI styling)
 
 > **Course**: COMP47910 - Secure Software Engineering  
-> **Programme**: MSc in Advanced Software Engineering  
+> **Program**: MSc in Advanced Software Engineering  
 > **Semester**: Summer 2024/25  
 > **University College Dublin (UCD)**  
 > <img src="/src/main/resources/static/images/crest-ucd.svg" alt="UCD Logo" width="36"/>
+
+### ✅ **IMFA & Email (SMTP) setup:  see [SMTP.md](SMTP.md) for the special configuration required to enable email-based 2FA (MFA).**
 
 ### ✅ **Important: Default Admin Credentials**
 > 🛂 **Predefined Admin User**  

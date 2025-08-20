@@ -1,4 +1,4 @@
-<!--layout.html-->
+<!-- layout.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -8,7 +8,6 @@
     <title layout:title-pattern="$CONTENT_TITLE">My Store</title>
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
-    <!--    <link rel="stylesheet" th:href="@{/webjars/font-awesome/6.7.2/css/all.min.css}" />-->
     <link rel="stylesheet" th:href="@{/webjars/font-awesome/css/all.min.css}">
     <link rel="icon" href="/images/favicon.ico" />
     <!-- CSRF (required for forms + AJAX) -->
@@ -23,6 +22,7 @@
         </h1>
         <nav class="d-flex align-items-center">
             <a th:href="@{/}" class="text-white me-3">Home</a>
+
             <a th:if="${session.loggedInUser}" th:href="@{/cart}" class="text-white me-3 position-relative">
                 <i class="fas fa-shopping-cart"></i> Cart
                 <span th:if="${session.cartQuantity > 0}"
@@ -31,6 +31,7 @@
                     0
                 </span>
             </a>
+
             <!-- Admin Panel -->
             <a th:if="${session.isAdmin}" th:href="@{/admin/books}" class="text-warning me-3">
                 <i class="fas fa-cogs"></i> Admin Panel
@@ -38,25 +39,35 @@
             <a th:if="${session.isAdmin}" th:href="@{/admin/authors}" class="text-warning me-3">
                 <i class="fas fa-user-edit"></i> Manage Authors
             </a>
+
             <a th:if="${session.loggedInUser}" th:href="@{/history}" class="text-white me-3">My History</a>
+
+            <!-- NEW: Account (security settings / MFA) -->
+            <a th:if="${session.loggedInUser}" th:href="@{/account/security}" class="text-white me-3">
+                <i class="fas fa-shield-alt"></i> Account
+            </a>
+
             <!-- If a customer is logged in, show welcome and logout -->
             <span th:if="${session.loggedInUser}" class="text-white me-3">
                 Welcome, <strong th:text="${session.loggedInUser}">Customer</strong>
             </span>
             <a th:if="${session.loggedInUser}" th:href="@{/customLogout}" class="text-white me-3">Logout</a>
+
             <!-- If a customer is not logged in, show login and register -->
             <a th:if="${session.loggedInUser == null}" th:href="@{/login}" class="text-white me-3">Login</a>
             <a th:if="${session.loggedInUser == null}" th:href="@{/register}" class="text-white">Register</a>
         </nav>
     </div>
 </header>
+
 <main class="container mt-4">
-    <!-- This fragment will be overridden -->
     <section layout:fragment="content">
         <p>Default content</p>
     </section>
 </main>
+
 <footer class="text-center text-muted mt-5 mb-4"> © 2025 My Store</footer>
+
 <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
 <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
 </body>

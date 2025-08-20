@@ -1,0 +1,62 @@
+<!-- account_security.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Account Security</title>
+</head>
+<body>
+<section layout:fragment="content" class="container mt-4">
+    <h3 class="mb-3">Account Security</h3>
+
+    <div th:if="${successMessage != null and !#strings.isEmpty(successMessage)}"
+         class="alert alert-success"
+         th:text="${successMessage}"></div>
+
+    <div th:if="${errorMessage != null and !#strings.isEmpty(errorMessage)}"
+         class="alert alert-danger"
+         th:text="${errorMessage}"></div>
+
+    <div class="card">
+        <div class="card-body">
+            <p><strong>Email:</strong> <span th:text="${email}">user@example.com</span></p>
+            <p><strong>MFA (Email OTP):</strong>
+                <span class="badge"
+                      th:classappend="${mfaEnabled} ? ' bg-success' : ' bg-secondary'"
+                      th:text="${mfaEnabled} ? 'Enabled' : 'Disabled'">Disabled</span>
+            </p>
+
+            <div class="d-flex gap-2">
+                <!-- Enable -->
+                <form th:if="${!mfaEnabled}" th:action="@{/account/mfa/enable}" method="post" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button class="btn btn-primary">Enable MFA</button>
+                </form>
+
+                <!-- Disable -->
+                <form th:if="${mfaEnabled}" th:action="@{/account/mfa/disable}" method="post" class="d-inline"
+                      onsubmit="return confirm('Are you sure you want to disable MFA?');">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button class="btn btn-outline-danger">Disable MFA</button>
+                </form>
+
+                <!-- Resend -->
+                <form th:if="${mfaEnabled}" th:action="@{/account/mfa/resend}" method="post" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button class="btn btn-outline-secondary">Resend Code</button>
+                </form>
+            </div>
+
+            <hr/>
+            <p class="text-muted small mb-0">
+                Codes are one-time and expire after a short period. If you enable MFA,
+                you’ll be prompted for an email code after entering your password at login.
+            </p>
+        </div>
+    </div>
+</section>
+</body>
+</html>

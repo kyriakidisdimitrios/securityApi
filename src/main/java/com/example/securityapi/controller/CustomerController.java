@@ -57,9 +57,9 @@ public class CustomerController {
     @GetMapping("")
     public String viewHomePage(@RequestParam(name = "keyword", required = false) String keyword,
                                Model model, HttpSession session) {
-        if (session.getAttribute("loggedInUser") == null) {
-            return "redirect:/login";
-        }
+        //if (session.getAttribute("loggedInUser") == null) {
+        //    return "redirect:/login";
+        //}
         List<Book> books = (keyword != null && !keyword.isEmpty())
                 ? bookService.searchBooks(keyword)
                 : bookService.findAllBooks();
@@ -87,8 +87,12 @@ public class CustomerController {
     // Show a registration form
     @GetMapping("/register")
     public String showRegisterForm(Model model, HttpSession session) {
+        // If already logged in, don’t allow registration; go home
+        if (session.getAttribute("loggedInUser") != null) {
+            return "redirect:/";
+        }
         model.addAttribute("customer", new Customer());
-        captchaService.generateCaptcha(session);   // generate CAPTCHA challenge
+        captchaService.generateCaptcha(session);   // keep your CAPTCHA
         return "register";
     }
     @PostMapping("/register")
@@ -130,6 +134,10 @@ public class CustomerController {
 
         // 4️⃣ Save customer (✅ ADDED try-catch for better logging)
         try {
+            // ⚠️ Do NOT force MFA here.
+            // The checkbox in register.html is bound to *{mfaEnabled},
+            // so whatever the user chose is already in customer.isMfaEnabled().
+
             customerService.saveCustomer(customer);
         } catch (Exception e) {
             // This will log the specific database or encryption error to your console

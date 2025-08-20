@@ -1,10 +1,7 @@
 package com.example.securityapi.config;
 
-import com.example.securityapi.security.CaptchaValidationFilter;
-import com.example.securityapi.security.LockoutFilter;
-import com.example.securityapi.security.LoginFailureHandler;
-import com.example.securityapi.security.LoginSuccessHandler;
-import com.example.securityapi.security.LoginAttemptService;
+import com.example.securityapi.security.*;
+import com.example.securityapi.service.CustomerService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import com.example.securityapi.security.MfaGateFilter;
 
 import java.time.Clock;
 import java.util.HashMap;
@@ -57,13 +55,22 @@ public class SecurityConfig {
     public LockoutFilter lockoutFilter(LoginAttemptService loginAttemptService) {
         return new LockoutFilter(loginAttemptService);
     }
-
+    @Bean
+    public MfaGateFilter mfaGateFilter(CustomerService customerService) {
+        return new MfaGateFilter(customerService);
+    }
+    @Bean
+    public MfaEnforcementFilter mfaEnforcementFilter(CustomerService customerService) {
+        return new MfaEnforcementFilter(customerService);
+    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            CaptchaValidationFilter captchaFilter,  // CAPTCHA throttles automation → CWE-307 (defense-in-depth)
                                            LockoutFilter lockoutFilter,            // CWE-307
                                            LoginSuccessHandler successHandler,     // generic messaging helps CWE-209/204
-                                           LoginFailureHandler failureHandler)     // generic messaging helps CWE-209/204
+                                           LoginFailureHandler failureHandler,    // generic messaging helps CWE-209/204
+                                           MfaEnforcementFilter mfaEnforcementFilter,
+                                           MfaGateFilter mfaGateFilter)    // << here
             throws Exception {
 
         // HTTP→HTTPS mapping; redirects to TLS → mitigates Cleartext Transmission (CWE-319)
@@ -118,10 +125,12 @@ public class SecurityConfig {
                                 "/invalidSession", "/sessionExpired", "/access-denied",
                                 "/css/**", "/js/**", "/webjars/**", "/images/**", "/fonts/**",
                                 "/ssrf-blocked",
+                                "/mfa", "/mfa/**",                 // << allow MFA pages
                                 "/error", "/favicon.ico"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")  // Enforce admin boundaries → CWE-862/285
                         .requestMatchers("/customers/**").hasRole("ADMIN") // Protect PII list → CWE-359/200 + CWE-862/285
+                        .requestMatchers("/account/security", "/account/mfa/**").authenticated()
                         .anyRequest().authenticated()
                 )
 
@@ -145,7 +154,8 @@ public class SecurityConfig {
         // Filter order: Lockout → Captcha → Username/Password → limits brute force (CWE-307)
         http.addFilterBefore(lockoutFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(captchaFilter, LockoutFilter.class);
-
+        http.addFilterAfter(mfaEnforcementFilter, UsernamePasswordAuthenticationFilter.class); // << add
+        http.addFilterAfter(mfaGateFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
