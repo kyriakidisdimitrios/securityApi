@@ -15,6 +15,12 @@ For example, you defined:
 - `MAIL_APP_PASSWORD=xxxxxxxxxxxxxxxx` (the 16-char Google app password)
 - `APP_MAIL_FROM=youraddress@gmail.com`
 
+1. [IntelliJ environment parameters step 1](src/main/resources/static/images/mfa-registration/mfa-step0.png)
+2. [IntelliJ environment parameters step 2](src/main/resources/static/images/mfa-registration/mfa-step1.png)
+3. [IntelliJ environment parameters step 3](src/main/resources/static/images/mfa-registration/mfa-step2.png)
+4. [IntelliJ environment parameters step 4](src/main/resources/static/images/mfa-registration/mfa-step3.png)
+
+
 These variables are injected into the runtime process.  
 Spring Boot reads them in `application.properties` using the syntax:
 
