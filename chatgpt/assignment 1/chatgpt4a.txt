@@ -1,6 +1,0 @@
-//https://chatgpt.com/c/6849b36d-cc10-8008-a688-522e6f1a4828
-
-//due to revealing critical passwords, github has ignored the commits, i followed chatgpt steps to fix the issue and
-//i lost all commits.
-
-//on the above link there is chatgpt4a.txt file, which contains the chatgpt conversation
