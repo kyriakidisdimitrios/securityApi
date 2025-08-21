@@ -127,7 +127,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.11.0</version> <!-- Or 1.10.0 for older compatibility -->
+            <version>1.14.0</version> <!-- Or 1.10.0 for older compatibility -->
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
